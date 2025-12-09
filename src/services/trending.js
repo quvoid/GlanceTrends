@@ -1,18 +1,22 @@
+import axios from 'axios';
 import { scrapeTrends24 } from './trending-scraper';
-import { exec } from 'child_process';
-import path from 'path';
-import util from 'util';
-
-const execPromise = util.promisify(exec);
 
 async function getRedditTrends() {
     try {
-        const scriptPath = path.join(process.cwd(), 'scripts', 'fetch_reddit.py');
-        const { stdout } = await execPromise(`python "${scriptPath}"`);
-        const trends = JSON.parse(stdout.trim());
-        return Array.isArray(trends) ? trends : [];
+        // Fetch top posts from r/popular (or r/news, r/worldnews)
+        const response = await axios.get('https://www.reddit.com/r/popular/top.json?limit=10&t=day', {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
+
+        const posts = response.data?.data?.children || [];
+
+        // Extract titles
+        const trends = posts.map(post => post.data.title).slice(0, 10);
+        return trends;
     } catch (error) {
-        console.error('Error fetching Reddit trends:', error);
+        console.error('Error fetching Reddit trends:', error.message);
         return [];
     }
 }

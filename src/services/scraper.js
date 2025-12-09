@@ -1,80 +1,59 @@
-import puppeteer from 'puppeteer';
+import axios from 'axios';
 import * as cheerio from 'cheerio';
 
+const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
 /**
- * Searches for a keyword and scrapes the first news article.
- * Uses DuckDuckGo HTML search to avoid Google blocking.
- * Includes a fallback to return a mock article if scraping fails.
+ * Scrapes news using Google News RSS (Reliable Fallback).
  * @param {string} keyword 
  * @returns {Promise<{title: string, text: string, url: string, source: string} | null>}
  */
 export async function scrapeNews(keyword) {
-    let browser;
     try {
-        browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
-        const page = await browser.newPage();
+        console.log(`Searching for: ${keyword}`);
 
-        // 1. Search DuckDuckGo (HTML version is easier to scrape)
-        const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(keyword + " news")}`;
+        // 1. Fetch Google News RSS (XML)
+        const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(keyword)}&hl=en-IN&gl=IN&ceid=IN:en`;
 
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-        await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
-
-        // 2. Extract the first result URL
-        const articleUrl = await page.evaluate(() => {
-            const link = document.querySelector('.result__a');
-            return link ? link.href : null;
+        const rssRes = await axios.get(rssUrl, {
+            headers: { 'User-Agent': USER_AGENT },
+            timeout: 5000
         });
 
-        if (!articleUrl) {
-            console.log(`No article found for ${keyword} on DDG`);
-            throw new Error('No article found');
+        const $rss = cheerio.load(rssRes.data, { xmlMode: true });
+        const firstItem = $rss('item').first();
+
+        if (!firstItem.length) {
+            console.log('No RSS items found');
+            return null;
         }
 
-        console.log(`Found article: ${articleUrl}`);
+        const title = firstItem.find('title').text();
+        const link = firstItem.find('link').text(); // Google redirects this
+        const pubDate = firstItem.find('pubDate').text();
+        const sourceName = firstItem.find('source').text() || 'Google News';
 
-        // 3. Go to the article page
-        await page.goto(articleUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        // Use a description snippet if available, or just title repeated
+        let textContent = firstItem.find('description').text() || title;
+        // Clean up HTML in description
+        textContent = cheerio.load(textContent).text();
 
-        // 4. Extract content
-        const html = await page.content();
-        const $ = cheerio.load(html);
+        console.log(`Found RSS item: ${title}`);
 
-        const title = $('h1').first().text().trim() || $('title').text().trim();
-
-        $('script, style, nav, header, footer, .ad, .advertisement').remove();
-
-        const paragraphs = [];
-        $('p').each((i, el) => {
-            const text = $(el).text().trim();
-            if (text.length > 50) paragraphs.push(text);
-        });
-
-        const text = paragraphs.join('\n\n');
-        const source = new URL(articleUrl).hostname.replace('www.', '');
-
-        if (!text) throw new Error('No text content extracted');
+        // 2. Optimization: Return RSS result immediately if we don't strictly need full text
+        // Attempting to scrape the redirect link often fails due to Google's redirect page or blocks.
+        // For the MVP, it is BETTER to show the snippet than nothing.
 
         return {
-            title,
-            text,
-            url: articleUrl,
-            source
+            title: title,
+            // Add some context to the text so it looks like a summary
+            text: `${textContent}\n\n(Source: ${sourceName} - ${pubDate})`,
+            url: link, // This is a google redirect link, but it works for users
+            source: sourceName
         };
 
     } catch (error) {
         console.error(`Error scraping news for ${keyword}:`, error.message);
-        // FALLBACK: Return a mock article so the UI isn't empty
-        return {
-            title: `Latest News about ${keyword}`,
-            text: `This is a placeholder article for ${keyword}. The scraper could not fetch the live content due to network restrictions, but here is where the summary would appear.`,
-            url: `https://google.com/search?q=${keyword}`,
-            source: 'Fallback Source'
-        };
-    } finally {
-        if (browser) await browser.close();
+        return null;
     }
 }

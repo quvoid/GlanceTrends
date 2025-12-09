@@ -8,7 +8,8 @@ export async function summarizeNews(text) {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (!text || text.length < 50) return null;
+    // Relaxed check: RSS snippets might be short (~50 chars)
+    if (!text || text.length < 20) return null;
 
     // Mock summary logic: Take first 3 sentences to form a coherent preview
     // In a real app, this would call OpenAI/Gemini
