@@ -1,12 +1,21 @@
 :root {
+  /* Default Dark Mode */
   --background: #101010;
   --foreground: #f3f5f7;
   --card-bg: #181818;
   --border: #333333;
   --accent: #0095f6;
-  /* Threads Blue */
   --text-secondary: #777777;
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+[data-theme='light'] {
+  --background: #ffffff;
+  --foreground: #101010;
+  --card-bg: #f3f5f7;
+  --border: #dbdbdb;
+  --accent: #0095f6;
+  --text-secondary: #7e7e7e;
 }
 
 * {

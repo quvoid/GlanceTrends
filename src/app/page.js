@@ -5,7 +5,7 @@ export default function Home() {
     <main>
       <header className="header">
         <div className="container">
-          <h1 className="logo">TrendingFeed</h1>
+          <h1 className="logo">SEKILAS GLANCE</h1>
         </div>
       </header>
 

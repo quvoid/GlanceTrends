@@ -2,17 +2,34 @@ import { NextResponse } from 'next/server';
 import { getTrendingKeywords } from '@/services/trending';
 import { scrapeNews } from '@/services/scraper';
 import { summarizeNews } from '@/services/llm';
-import { getInteractions, saveInteraction } from '@/services/db';
+import dbConnect from '@/lib/db';
+import Interaction from '@/models/Interaction';
+import { jwtVerify } from 'jose';
+import { cookies } from 'next/headers';
+
+async function getUserFromToken() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+    if (!token) return null;
+    try {
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
+        const { payload } = await jwtVerify(token, secret);
+        return payload.userId;
+    } catch (e) {
+        return null;
+    }
+}
 
 export async function GET(request) {
     try {
+        await dbConnect();
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get('page')) || 1;
         const limit = parseInt(searchParams.get('limit')) || 3;
         const offset = (page - 1) * limit;
 
         // 1. Get Trending Keywords
-        const keywords = await getTrendingKeywords();
+        const { all: keywords, twitter, reddit } = await getTrendingKeywords();
 
         // 2. Paginate keywords
         const limitedKeywords = keywords.slice(offset, offset + limit);
@@ -21,9 +38,6 @@ export async function GET(request) {
             return NextResponse.json({ feed: [], trending: keywords, hasMore: false });
         }
 
-        // Load all interactions once
-        const allInteractions = getInteractions();
-
         const newsPromises = limitedKeywords.map(async (keyword) => {
             // Scrape
             const article = await scrapeNews(keyword);
@@ -31,19 +45,26 @@ export async function GET(request) {
 
             // Summarize
             const summary = await summarizeNews(article.text);
+            if (!summary) return null;
 
-            // Get existing interactions
-            const articleInteractions = allInteractions[article.url] || { likes: 0, comments: [] };
+            // Get DB interactions
+            const interactions = await Interaction.find({ articleUrl: article.url });
+
+            const likes = interactions.filter(i => i.type === 'like').length;
+            const comments = interactions.filter(i => i.type === 'comment').map(i => ({
+                text: i.content,
+                timestamp: i.createdAt
+            }));
 
             return {
-                id: Buffer.from(article.url).toString('base64'), // Simple ID from URL
+                id: Buffer.from(article.url).toString('base64'),
                 keyword,
                 title: article.title,
                 summary,
                 url: article.url,
                 source: article.source,
-                likes: articleInteractions.likes,
-                comments: articleInteractions.comments
+                likes,
+                comments
             };
         });
 
@@ -53,6 +74,7 @@ export async function GET(request) {
         return NextResponse.json({
             feed,
             trending: keywords,
+            trendingSources: { twitter, reddit },
             hasMore: offset + limit < keywords.length
         });
     } catch (error) {
@@ -63,29 +85,46 @@ export async function GET(request) {
 
 export async function POST(request) {
     try {
+        await dbConnect();
+        const userId = await getUserFromToken();
+        if (!userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { action, url, comment } = body;
 
-        let result;
         if (action === 'like') {
-            result = saveInteraction(url, 'like');
+            await Interaction.create({
+                userId,
+                articleUrl: url,
+                type: 'like'
+            });
         } else if (action === 'comment' && comment) {
-            result = saveInteraction(url, 'comment', {
-                text: comment,
-                timestamp: new Date().toISOString()
+            await Interaction.create({
+                userId,
+                articleUrl: url,
+                type: 'comment',
+                content: comment
             });
         }
 
-        if (!result) {
-            return NextResponse.json({ error: 'Failed to save interaction' }, { status: 500 });
-        }
+        // Fetch updated counts
+        const interactions = await Interaction.find({ articleUrl: url });
+
+        const likes = interactions.filter(i => i.type === 'like').length;
+        const comments = interactions.filter(i => i.type === 'comment').map(i => ({
+            text: i.content,
+            timestamp: i.createdAt
+        }));
 
         return NextResponse.json({
             success: true,
-            likes: result.likes,
-            comments: result.comments
+            likes,
+            comments
         });
     } catch (error) {
+        console.error('Interaction Error:', error);
         return NextResponse.json({ error: 'Invalid Request' }, { status: 400 });
     }
 }

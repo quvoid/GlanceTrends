@@ -8,10 +8,11 @@ export async function summarizeNews(text) {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (!text) return "No content to summarize.";
+    if (!text || text.length < 50) return null;
 
-    // Mock summary logic: Take first 3 sentences or generic text
-    const sentences = text.split('.').slice(0, 3).join('. ') + '.';
+    // Mock summary logic: Take first 3 sentences to form a coherent preview
+    // In a real app, this would call OpenAI/Gemini
+    const sentences = text.split('.').slice(0, 3).join('. ').trim();
 
-    return `[AI Summary] ${sentences} (This is a mock summary for the MVP).`;
+    return sentences.endsWith('.') ? sentences : `${sentences}.`;
 }

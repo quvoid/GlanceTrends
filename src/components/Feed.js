@@ -8,6 +8,8 @@ import styles from './Feed.module.css';
 export default function Feed() {
     const [items, setItems] = useState([]);
     const [trending, setTrending] = useState([]);
+    const [trendingSources, setTrendingSources] = useState({ twitter: [], reddit: [] });
+    const [activeTab, setActiveTab] = useState('twitter');
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -28,6 +30,9 @@ export default function Feed() {
             }
             if (data.trending && pageNum === 1) {
                 setTrending(data.trending);
+                if (data.trendingSources) {
+                    setTrendingSources(data.trendingSources);
+                }
             }
             if (data.hasMore !== undefined) {
                 setHasMore(data.hasMore);
@@ -62,6 +67,9 @@ export default function Feed() {
 
     return (
         <div className={styles.layout}>
+            <div className={styles.navContainer}>
+                <Navigation />
+            </div>
             <div className={styles.main}>
                 {items.map((item) => (
                     <NewsCard key={item.id} item={item} />
@@ -78,19 +86,34 @@ export default function Feed() {
 
 
             <aside className={styles.sidebar}>
-                <div className={styles.navContainer}>
-                    <Navigation />
-                </div>
+
 
                 <div className={styles.trendingContainer}>
-                    <h3 className={styles.sidebarTitle}>Trending Now</h3>
+                    <div className={styles.tabContainer}>
+                        <button
+                            className={`${styles.tab} ${activeTab === 'twitter' ? styles.activeTab : ''}`}
+                            onClick={() => setActiveTab('twitter')}
+                        >
+                            Twitter
+                        </button>
+                        <button
+                            className={`${styles.tab} ${activeTab === 'reddit' ? styles.activeTab : ''}`}
+                            onClick={() => setActiveTab('reddit')}
+                        >
+                            Reddit
+                        </button>
+                    </div>
+
                     <ul className={styles.trendingList}>
-                        {trending.map((topic, index) => (
+                        {(activeTab === 'twitter' ? trendingSources.twitter : trendingSources.reddit).map((topic, index) => (
                             <li key={index} className={styles.trendingItem}>
                                 <span className={styles.rank}>{index + 1}</span>
                                 <span className={styles.topic}>{topic}</span>
                             </li>
                         ))}
+                        {(activeTab === 'twitter' ? trendingSources.twitter : trendingSources.reddit).length === 0 && (
+                            <li className={styles.empty}>No trends found.</li>
+                        )}
                     </ul>
                 </div>
             </aside>
