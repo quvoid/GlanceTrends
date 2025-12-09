@@ -1,0 +1,108 @@
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    /* Increased sidebar width */
+    gap: 40px;
+    align-items: start;
+    max-width: 1400px;
+    /* Increased max width */
+    margin: 0 auto;
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    /* Increased gap */
+}
+
+.sidebar {
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: row;
+    /* Side-by-side Nav and Trending */
+    gap: 20px;
+}
+
+.navContainer {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px;
+    width: 80px;
+    /* Narrow strip for icons */
+    height: fit-content;
+    min-height: 500px;
+}
+
+.trendingContainer {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    flex: 1;
+}
+
+.sidebarTitle {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--foreground);
+}
+
+.trendingList {
+    list-style: none;
+}
+
+.trendingItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+}
+
+.trendingItem:last-child {
+    border-bottom: none;
+}
+
+.rank {
+    font-weight: bold;
+    color: var(--text-secondary);
+    width: 20px;
+}
+
+.topic {
+    font-weight: 500;
+}
+
+.loading,
+.empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        position: static;
+        flex-direction: column;
+        order: -1;
+        margin-bottom: 20px;
+    }
+
+    .navContainer {
+        width: 100%;
+        flex-direction: row;
+        min-height: auto;
+        justify-content: space-around;
+        display: flex;
+    }
+}
