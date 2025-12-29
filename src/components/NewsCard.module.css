@@ -1,17 +1,26 @@
 .card {
     background-color: var(--card-bg);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
+    border-radius: 16px;
+    /* softer corners */
+    padding: 24px;
+    /* More padding */
+    margin-bottom: 24px;
+    /* More spacing between cards */
+    backdrop-filter: blur(var(--backdrop-blur));
+    -webkit-backdrop-filter: blur(var(--backdrop-blur));
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .meta {
     display: flex;
     align-items: center;
     font-size: 0.9rem;
+    /* Slightly smaller meta */
     color: var(--text-secondary);
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
 }
 
 .dot {
@@ -20,19 +29,40 @@
 
 .keyword {
     color: var(--accent);
+    font-weight: 500;
 }
 
 .title {
-    font-size: 1.1rem;
+    font-size: 1.6rem;
+    /* Larger */
     font-weight: 600;
-    margin-bottom: 8px;
-    line-height: 1.3;
+    /* Not too bold */
+    margin-bottom: 14px;
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+}
+
+.categoryBadge {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--foreground);
+    font-size: 0.8rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-left: auto;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .summary {
-    font-size: 0.95rem;
-    color: #cccccc;
-    margin-bottom: 12px;
+    font-size: 1.15rem;
+    /* Larger readable text */
+    color: rgba(255, 255, 255, 0.9);
+    /* Lighter text */
+    margin-bottom: 20px;
+    line-height: 1.8;
+    /* Very readable */
+    font-weight: 300;
 }
 
 .actions {
@@ -46,9 +76,33 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: var(--text-secondary);
     transition: color 0.2s;
+    transition: color 0.2s;
+}
+
+.activeAction {
+    color: var(--accent);
+}
+
+.stealBtn {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #333;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.stealBtn:hover {
+    background: #444;
 }
 
 .actionBtn:hover {
@@ -62,7 +116,7 @@
 }
 
 .comment {
-    font-size: 0.9rem;
+    font-size: 1rem;
     margin-bottom: 8px;
     padding: 8px;
     background: #222;
@@ -80,10 +134,117 @@
     border: 1px solid var(--border);
     background: transparent;
     color: var(--foreground);
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
+
 
 .input:focus {
     outline: none;
     border-color: var(--accent);
+}
+
+/* Share Modal Styles */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 95%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modalHeader {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.friendList {
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.friendItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.friendInfo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.sendBtn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.sendBtn:disabled {
+    opacity: 0.7;
+    cursor: default;
+}
+
+.sent {
+    background: #4caf50;
+}
+
+.loading,
+.empty {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px;
 }

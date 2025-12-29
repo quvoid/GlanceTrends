@@ -50,7 +50,7 @@ export default function LoginPage() {
             >
                 <div style={styles.header}>
                     <h1 style={styles.title}>Welcome Back</h1>
-                    <p style={styles.subtitle}>Enter your credentials to access the nexus.</p>
+                    <p style={styles.subtitle}>Sign in to your account to continue.</p>
                 </div>
 
                 {error && (
@@ -92,12 +92,12 @@ export default function LoginPage() {
                         disabled={isLoading}
                         style={styles.button}
                     >
-                        {isLoading ? 'Accessing...' : 'Login'}
+                        {isLoading ? 'Signing in...' : 'Login'}
                     </motion.button>
                 </form>
 
                 <p style={styles.footer}>
-                    New here? <Link href="/register" style={styles.link}>Initialize Account</Link>
+                    Don't have an account? <Link href="/register" style={styles.link}>Create one</Link>
                 </p>
             </motion.div>
         </div>

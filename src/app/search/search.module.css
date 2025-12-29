@@ -1,0 +1,109 @@
+.container {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    min-height: 100vh;
+    background-color: var(--background);
+    color: var(--foreground);
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.navWrapper {
+    border-right: 1px solid var(--border);
+    padding: 10px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+}
+
+.content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.searchHeader {
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 40px;
+    margin-top: 20px;
+}
+
+.searchForm {
+    display: flex;
+    gap: 10px;
+}
+
+.searchInput {
+    flex: 1;
+    padding: 15px 20px;
+    border-radius: 30px;
+    border: 1px solid var(--border);
+    background-color: var(--card-bg);
+    color: var(--foreground);
+    font-size: 1.1rem;
+    outline: none;
+    transition: box-shadow 0.2s;
+}
+
+.searchInput:focus {
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+.searchBtn {
+    background-color: var(--accent);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.searchBtn:hover {
+    transform: scale(1.05);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+}
+
+.message {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 50px;
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 100px;
+    color: var(--text-secondary);
+    gap: 10px;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

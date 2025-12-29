@@ -1,0 +1,448 @@
+.container {
+    display: grid;
+    /* Columns set inline in component: 220px 1fr 10px ${width} */
+    gap: 0;
+    /* Removing gap, relying on grid items */
+    width: 100%;
+    max-width: 100vw;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    /* Fixed height */
+    overflow: hidden;
+    /* Prevent page scroll */
+    background-color: var(--background);
+}
+
+/* ... existing ... */
+
+.msgContent {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 18px;
+    border-radius: 16px;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #e0e0e0;
+    word-break: break-word;
+    /* Fix long words breaking layout */
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+.message.sent .msgContent {
+    background: var(--accent);
+    color: white;
+    border: none;
+}
+
+/* Right Column: Friends List (The "Sidebar") */
+.friendsList {
+    margin-top: 40px;
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    height: fit-content;
+    max-height: calc(100vh - 60px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 40px;
+}
+
+.header {
+    padding: 16px 20px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.searchBox {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.searchInput {
+    width: 100%;
+    padding: 10px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    font-size: 0.9rem;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.list {
+    overflow-y: auto;
+    padding: 0;
+}
+
+.sectionTitle {
+    padding: 12px 20px 4px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.listItem {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-left: 2px solid transparent;
+}
+
+.listItem:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.listItem.active {
+    background: rgba(29, 155, 240, 0.1);
+    border-left-color: var(--accent);
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #fff;
+}
+
+.name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--foreground);
+}
+
+.addBtn {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.addBtn:hover {
+    background: var(--accent);
+    color: white;
+}
+
+/* Input Area in Center */
+.inputArea {
+    margin-top: auto;
+    padding: 20px 0;
+    position: sticky;
+    bottom: 0;
+    background: var(--background);
+    /* Or transparent for floating effect, but background is safer for overlap */
+    z-index: 10;
+}
+
+.inputWrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 10px 16px;
+}
+
+.chatInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1rem;
+}
+
+.chatInput:focus {
+    outline: none;
+}
+
+.iconBtn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.iconBtn:hover {
+    color: var(--accent);
+}
+
+.emptyState {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    gap: 16px;
+    opacity: 0.7;
+}
+
+/* News Bubble Styling */
+.newsBubble {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.newsBubble:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+}
+
+.newsImage {
+    height: 140px;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.newsContent {
+    padding: 12px;
+}
+
+.newsTitle {
+    font-weight: 700;
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.newsSource {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Reuse Nav Container styles locally to match layout if needed, 
+   but we'll just wrap the existing Navigation component */
+.navWrapper {
+    border-right: 1px solid var(--border);
+    padding: 10px;
+}
+
+.friendsList {
+    background-color: var(--card-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    font-weight: bold;
+    font-size: 1.1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.searchBox {
+    padding: 15px;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 8px 12px;
+    background: #222;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: white;
+}
+
+.sectionTitle {
+    padding: 10px 20px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-top: 10px;
+}
+
+.list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.listItem {
+    padding: 10px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+}
+
+.listItem:hover,
+.listItem.active {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #3b82f6, #e91e63);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.name {
+    font-weight: 500;
+}
+
+/* Center Column: Active Chat (The "Feed") */
+.chatArea {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    background: transparent;
+    overflow: hidden;
+    /* Ensure inner parts scroll, not this */
+}
+
+.chatHeader {
+    padding: 15px 20px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--foreground);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.3);
+    /* Slight tint for header */
+    backdrop-filter: blur(5px);
+    z-index: 10;
+    flex-shrink: 0;
+    /* Prevent shrinking */
+}
+
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scrollbar-width: thin;
+}
+
+.message {
+    display: flex;
+    gap: 10px;
+    max-width: 70%;
+}
+
+.message.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.msgContent {
+    background-color: var(--card-bg);
+    padding: 10px 15px;
+    border-radius: 12px;
+    border-top-left-radius: 2px;
+}
+
+.message.sent .msgContent {
+    background-color: var(--accent);
+    color: white;
+    border-radius: 12px;
+    border-top-right-radius: 2px;
+}
+
+.inputArea {
+    padding: 20px;
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    /* Prevent shrinking */
+}
+
+.chatInput {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background-color: #2a2a2a;
+    color: white;
+    font-size: 1rem;
+}
+
+.emptyState {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    flex-direction: column;
+    gap: 10px;
+}
+
+.addBtn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.acceptBtn {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: auto;
+    cursor: pointer;
+}
+
+.resizer {
+    transition: background 0.2s;
+}
+
+.resizer:hover {
+    background: var(--accent) !important;
+}

@@ -31,10 +31,10 @@ export async function scrapeTrends24() {
             }
         });
 
-        // Remove duplicates and take top 10
+        // Remove duplicates and take top 25
         const uniqueTrends = [...new Set(candidates)];
-        console.log('Scraped Trends:', uniqueTrends.slice(0, 10));
-        return uniqueTrends.slice(0, 10);
+        console.log(`Scraped ${uniqueTrends.length} Trends24 items.`);
+        return uniqueTrends.slice(0, 25);
 
     } catch (error) {
         console.error('Error scraping Trends24:', error.message);
