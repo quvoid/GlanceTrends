@@ -51,12 +51,14 @@ export async function POST(request) {
         if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await request.json();
-        const { recipientId, content } = body;
+        const { recipientId, content, type = 'text', metadata = {} } = body;
 
         const message = await Message.create({
             sender: userId,
             recipient: recipientId,
-            content
+            content,
+            type,
+            metadata
         });
 
         return NextResponse.json({ success: true, message });

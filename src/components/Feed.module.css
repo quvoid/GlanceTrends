@@ -1,34 +1,47 @@
+/* Feed.module.css */
+/* ... existing styles ... */
+
 .layout {
     display: grid;
-    grid-template-columns: 80px 1fr 350px;
-    /* Nav | Feed | Trending */
-    gap: 40px;
-    align-items: start;
-    max-width: 1400px;
-    /* Increased max width */
-    margin: 0 auto;
+    grid-template-columns: 220px 1fr 320px;
+    gap: 20px;
+    width: 100%;
+    max-width: 100%;
+    /* Full breadth */
+    margin: 0;
+    padding: 0 10px;
+    /* Minimal padding */
+    min-height: 100vh;
+}
+
+.navContainer {
+    /* Background removed for cleaner look, now just layout */
+    width: 100%;
+    height: fit-content;
+    position: sticky;
+    top: 20px;
 }
 
 .main {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    /* Increased gap */
-    /* Increased gap */
+    padding-top: 40px;
+}
+
+.sidebar {
+    padding-top: 40px;
 }
 
 .controls {
+    margin-bottom: 24px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    margin-bottom: 10px;
+    gap: 20px;
 }
 
 .feedTabs {
     display: flex;
-    gap: 10px;
-    border-bottom: 2px solid var(--border);
-    padding-bottom: 10px;
+    gap: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
 }
 
 .feedTab {
@@ -36,140 +49,131 @@
     border: none;
     color: var(--text-secondary);
     font-size: 1.1rem;
-    font-weight: 700;
+    font-weight: 600;
+    padding-bottom: 16px;
     cursor: pointer;
-    padding: 8px 16px;
-    border-radius: 8px;
-    transition: all 0.2s;
+    position: relative;
+    transition: color 0.3s ease;
 }
 
 .activeFeedTab {
-    background-color: var(--accent);
-    color: white;
+    color: var(--foreground);
+}
+
+.activeFeedTab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 3px 3px 0 0;
 }
 
 .categories {
     display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.categories::-webkit-scrollbar {
+    display: none;
 }
 
 .categoryBtn {
-    background: var(--card-bg);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border);
     color: var(--text-secondary);
-    padding: 6px 12px;
+    padding: 8px 18px;
     border-radius: 20px;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.2s;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.categoryBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #666;
+    color: var(--foreground);
 }
 
 .activeCategory {
+    background: var(--accent);
+    color: white;
     border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(0, 149, 246, 0.1);
 }
 
-.sidebar {
-    position: sticky;
-    top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+    font-style: italic;
 }
 
-.navContainer {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px;
-    width: 80px;
-    /* Narrow strip for icons */
-    height: fit-content;
-    min-height: 500px;
-    position: sticky;
-    top: 20px;
-}
-
+/* Trending Sidebar */
 .trendingContainer {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    flex: 1;
-}
-
-.sidebarTitle {
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin-bottom: 16px;
-    color: var(--foreground);
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 0;
+    position: sticky;
+    top: 40px;
+    overflow: hidden;
 }
 
 .tabContainer {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tab {
+    flex: 1;
     background: none;
     border: none;
+    padding: 16px;
     color: var(--text-secondary);
-    font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 6px;
-    transition: all 0.2s;
+    transition: background 0.2s, color 0.2s;
 }
 
 .tab:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.03);
     color: var(--foreground);
 }
 
 .activeTab {
+    background: rgba(255, 255, 255, 0.05);
     color: var(--foreground);
-    background-color: rgba(255, 255, 255, 0.1);
+    border-bottom: 2px solid var(--accent);
 }
 
 .trendingList {
     list-style: none;
-    max-height: 400px;
-    overflow-y: auto;
-    padding-right: 5px;
-}
-
-/* Custom Scrollbar */
-.trendingList::-webkit-scrollbar {
-    width: 6px;
-}
-
-.trendingList::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 3px;
-}
-
-.trendingList::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
-}
-
-.trendingList::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    padding: 0;
+    margin: 0;
 }
 
 .trendingItem {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 1.05rem;
+    padding: 16px 20px;
+    font-size: 0.95rem;
+    color: var(--foreground);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: background 0.2s;
+    gap: 15px;
+}
+
+.trendingItem:hover {
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .trendingItem:last-child {
@@ -177,40 +181,23 @@
 }
 
 .rank {
-    font-weight: bold;
-    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 1.1rem;
     width: 20px;
+    text-align: center;
 }
 
 .topic {
-    font-weight: 500;
+    font-weight: 600;
 }
 
-.loading,
-.empty {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-secondary);
-    grid-column: 1 / -1;
+.trendAction {
+    margin-left: auto;
+    opacity: 0;
+    color: var(--accent);
+    transition: opacity 0.2s;
 }
 
-@media (max-width: 768px) {
-    .layout {
-        grid-template-columns: 1fr;
-    }
-
-    .sidebar {
-        position: static;
-        flex-direction: column;
-        order: -1;
-        margin-bottom: 20px;
-    }
-
-    .navContainer {
-        width: 100%;
-        flex-direction: row;
-        min-height: auto;
-        justify-content: space-around;
-        display: flex;
-    }
+.trendingItem:hover .trendAction {
+    opacity: 1;
 }

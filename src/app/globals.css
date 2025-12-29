@@ -1,21 +1,25 @@
 :root {
-  /* Default Dark Mode */
-  --background: #101010;
-  --foreground: #f3f5f7;
-  --card-bg: #181818;
-  --border: #333333;
-  --accent: #0095f6;
-  --text-secondary: #777777;
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Premium Dark Mode */
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --card-bg: rgba(20, 20, 20, 0.6);
+  /* Transparent for glass effect */
+  --border: rgba(255, 255, 255, 0.1);
+  --accent: #29b6f6;
+  /* Cyan Glow */
+  --text-secondary: #a0a0a0;
+  --font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --backdrop-blur: 15px;
 }
 
 [data-theme='light'] {
   --background: #ffffff;
   --foreground: #101010;
-  --card-bg: #f3f5f7;
-  --border: #dbdbdb;
-  --accent: #0095f6;
-  --text-secondary: #7e7e7e;
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --border: #e0e0e0;
+  --accent: #0070f3;
+  --text-secondary: #666;
+  --backdrop-blur: 10px;
 }
 
 * {
@@ -27,9 +31,14 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-family);
-  line-height: 1.5;
+  /* Ensure sans-serif is used if var is missing */
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  line-height: 1.7;
+  /* Improved line height */
+  font-weight: 300;
+  /* Lighter font weight */
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
 a {
@@ -50,19 +59,45 @@ button {
   max-width: 1400px;
   /* Increased width */
   margin: 0 auto;
-  padding: 20px;
+  padding: 20px 20px;
+  /* Reduced vertical padding */
 }
 
 .header {
   display: flex;
   justify-content: center;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+  /* Significantly reduced padding */
+  /* border-bottom: 1px solid var(--border); */
+  /* Removed border for cleaner look */
   margin-bottom: 20px;
+  /* Reduced margin */
 }
 
 .logo {
-  font-weight: bold;
-  font-size: 1.5rem;
-  letter-spacing: -1px;
+  font-weight: 800;
+  font-size: 2.5rem;
+  /* Larger */
+  letter-spacing: 4px;
+  /* Wide tracking */
+  text-transform: uppercase;
+  background: linear-gradient(to right, #fff, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 30px rgba(41, 182, 246, 0.5);
+  /* Glow */
+  position: relative;
+}
+
+.logo::after {
+  content: 'TRENDING';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  letter-spacing: 8px;
+  color: var(--text-secondary);
+  font-weight: 400;
 }
