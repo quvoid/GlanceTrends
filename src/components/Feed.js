@@ -26,66 +26,28 @@ export default function Feed() {
 
     const categories = ['All', 'Tech', 'Politics', 'Business', 'Entertainment', 'Sports', 'Science'];
 
-    const fetchFeed = async (pageNum) => {
+    const fetchFeed = async (pageNum, cat = 'All') => {
         if (loading) return;
         setLoading(true);
         try {
-            const res = await fetch(`/api/feed?page=${pageNum}&limit=3`);
+            let url = `/api/feed?page=${pageNum}&limit=3`;
+            if (cat !== 'All') {
+                url += `&q=${encodeURIComponent(cat)}`;
+            }
+
+            const res = await fetch(url);
             const data = await res.json();
 
             if (data.feed) {
                 setItems(prev => {
+                    // Reset if page 1
+                    if (pageNum === 1) return data.feed;
+
                     const newItems = data.feed.filter(item => !prev.some(p => p.id === item.id));
-
-                    // INJECT DUMMY COMMENTS FOR DEMO (First Item Only)
-                    if (pageNum === 1 && newItems.length > 0) {
-                        const authors = [
-                            { name: "Tech Insider", handle: "@techinsider", verified: true, bio: "Breaking tech news and reviews.", followers: "2.4M", avatar: "T" },
-                            { name: "Sarah Connor", handle: "@skynet_hater", verified: true, bio: "No Fate. Resistance Leader.", followers: "50K", avatar: "S" },
-                            { name: "Crypto King", handle: "@btc_maxi", verified: false, bio: "Bitcoin is king. HODL.", followers: "1.2K", avatar: "C" },
-                            { name: "News Bot", handle: "@auto_news", verified: true, bio: "Automated news aggregation.", followers: "500K", avatar: "N" },
-                            { name: "John Doe", handle: "@johndoe123", verified: false, bio: "Just a guy.", followers: "42", avatar: "J" },
-                            { name: "Elon's Alt", handle: "@mars_mission", verified: true, bio: "Occupying Mars.", followers: "100M", avatar: "E" },
-                            { name: "Design Daily", handle: "@ui_ux_trends", verified: true, bio: "Daily dose of design.", followers: "300K", avatar: "D" },
-                            { name: "Code Ninja", handle: "@fullstack_dev", verified: false, bio: "Coffee -> Code.", followers: "4K", avatar: "C" }
-                        ];
-
-                        const rawComments = [
-                            { text: "This is absolutely amazing! Love it." },
-                            { text: "Terrible reporting, completely wrong." },
-                            { text: "I agree with this perspective, very helpful." },
-                            { text: "Worst article I've read all day. Boring." },
-                            { text: "Fantastic news for the industry!" },
-                            { text: "Sad to see this happening." },
-                            { text: "Great insights, thanks for sharing." },
-                            { text: "This is fake news, don't believe it." },
-                            { text: "Cool update, waiting for more." },
-                            { text: "Stupid decision by the company." },
-                            { text: "Excellent summary, saved me time." },
-                            { text: "Awful clickbait title." },
-                            { text: "Nice work, really useful." },
-                            { text: "Useless information, waste of time." },
-                            { text: "Best thing I've read today!" },
-                            { text: "Trash content." },
-                            { text: "Loved the details." },
-                            { text: "Hate this topic." },
-                            { text: "Right on point!" },
-                            { text: "Poorly written." },
-                            { text: "Love this!" }, { text: "So happy about this" }, { text: "Amazing job" }
-                        ];
-
-                        // Map comments to random authors
-                        const dummyComments = rawComments.flatMap(c => [c, c]).map((c, i) => ({ // Doubling via flatMap
-                            ...c,
-                            author: authors[i % authors.length]
-                        }));
-
-                        newItems[0].comments = dummyComments;
-                    }
-
                     return [...prev, ...newItems];
                 });
             }
+            // ... (rest of logic handles trending/hasMore)
             if (data.trending && pageNum === 1) {
                 setTrending(data.trending);
                 if (data.trendingSources) {
@@ -114,21 +76,26 @@ export default function Feed() {
         }
     };
 
+    // Initial Load & Tab Change
     useEffect(() => {
+        setItems([]); // Clear on switch
+        setPage(1);
+        setHasMore(true);
+
         if (feedTab === 'trending') {
-            fetchFeed(1);
+            fetchFeed(1, selectedCategory);
         } else {
             fetchSaved();
         }
-    }, [feedTab]);
+    }, [feedTab, selectedCategory]);
 
-    // Infinite scroll for trending only
+    // Infinite scroll
     useEffect(() => {
         const handleScroll = () => {
             if (feedTab === 'trending' && window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && hasMore && !loading) {
                 setPage(prev => {
                     const nextPage = prev + 1;
-                    fetchFeed(nextPage);
+                    fetchFeed(nextPage, selectedCategory);
                     return nextPage;
                 });
             }
@@ -136,13 +103,15 @@ export default function Feed() {
 
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [hasMore, loading, feedTab]);
+    }, [hasMore, loading, feedTab, selectedCategory]);
 
-    // Filter Logic
+    // Display Logic
     const displayedItems = feedTab === 'trending' ? items : savedItems;
-    const finalItems = selectedCategory === 'All'
-        ? displayedItems
-        : displayedItems.filter(i => i.category === selectedCategory);
+    // No more client-side filtering for 'trending' as API handles it. 
+    // For 'saved', we might want to filter, but let's keep it simple for now or filter if needed.
+    const finalItems = feedTab === 'saved' && selectedCategory !== 'All'
+        ? displayedItems.filter(i => i.category === selectedCategory)
+        : displayedItems;
 
     return (
         <div className={styles.layout}>
