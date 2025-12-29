@@ -49,8 +49,8 @@ export default function RegisterPage() {
                 style={styles.card}
             >
                 <div style={styles.header}>
-                    <h1 style={styles.title}>Join the Grid</h1>
-                    <p style={styles.subtitle}>Create your identity to start exploring.</p>
+                    <h1 style={styles.title}>Create Account</h1>
+                    <p style={styles.subtitle}>Sign up to get started with Trending News.</p>
                 </div>
 
                 {error && (
@@ -67,7 +67,7 @@ export default function RegisterPage() {
                     <div style={styles.inputGroup}>
                         <input
                             type="text"
-                            placeholder="Display Name"
+                            placeholder="Full Name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
@@ -102,12 +102,12 @@ export default function RegisterPage() {
                         disabled={isLoading}
                         style={styles.button}
                     >
-                        {isLoading ? 'Initializing...' : 'Register'}
+                        {isLoading ? 'Creating account...' : 'Register'}
                     </motion.button>
                 </form>
 
                 <p style={styles.footer}>
-                    Already have an ID? <Link href="/login" style={styles.link}>Login</Link>
+                    Already have an account? <Link href="/login" style={styles.link}>Sign in</Link>
                 </p>
             </motion.div>
         </div>

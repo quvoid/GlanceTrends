@@ -28,14 +28,28 @@ export async function GET(request) {
         const limit = parseInt(searchParams.get('limit')) || 3;
         const offset = (page - 1) * limit;
 
-        // 1. Get Trending Keywords
-        const { all: keywords, twitter, reddit } = await getTrendingKeywords();
+        // 1. Get Keywords (Search or Trending)
+        // 1. Get Keywords (Search or Trending)
+        const query = searchParams.get('q');
+        let keywords = [];
+        let twitter = [];
+        let reddit = [];
 
-        // 2. Paginate keywords
-        const limitedKeywords = keywords.slice(offset, offset + limit);
+        if (query) {
+            keywords = [query];
+        } else {
+            const trends = await getTrendingKeywords();
+            keywords = trends.all;
+            twitter = trends.twitter;
+            reddit = trends.reddit;
+        }
+
+        // 2. Paginate keywords (skip pagination if single search query, or handle it differently)
+        // If it's a search, we might want fewer generic results, but let's keep logic simple.
+        const limitedKeywords = query ? keywords : keywords.slice(offset, offset + limit);
 
         if (limitedKeywords.length === 0) {
-            return NextResponse.json({ feed: [], trending: keywords, hasMore: false });
+            return NextResponse.json({ feed: [], trending: [], hasMore: false });
         }
 
         const newsPromises = limitedKeywords.map(async (keyword) => {
@@ -43,9 +57,11 @@ export async function GET(request) {
             const article = await scrapeNews(keyword);
             if (!article) return null;
 
-            // Summarize
-            const summary = await summarizeNews(article.text);
-            if (!summary) return null;
+            // Summarize & Analyze
+            const llmResult = await summarizeNews(article.text);
+            if (!llmResult) return null;
+
+            const { summary, category, sentiment } = llmResult;
 
             // Get DB interactions
             const interactions = await Interaction.find({ articleUrl: article.url });
@@ -61,6 +77,8 @@ export async function GET(request) {
                 keyword,
                 title: article.title,
                 summary,
+                category,
+                sentiment,
                 url: article.url,
                 source: article.source,
                 likes,

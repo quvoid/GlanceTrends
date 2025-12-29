@@ -8,8 +8,9 @@ import { summarizeNews } from '../src/services/llm.js';
 
 async function test() {
     console.log('1. Fetching Trending Keywords...');
-    const keywords = await getTrendingKeywords();
-    console.log('Keywords:', keywords);
+    const result = await getTrendingKeywords();
+    const keywords = result.all || [];
+    console.log('Keywords found:', keywords.length);
 
     if (keywords.length === 0) {
         console.error('No keywords found.');
