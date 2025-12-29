@@ -19,6 +19,7 @@ export default function Feed() {
     const [activeTab, setActiveTab] = useState('twitter');
     const [feedTab, setFeedTab] = useState('trending'); // 'trending' | 'saved'
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [feedCache, setFeedCache] = useState({});
 
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
@@ -27,6 +28,13 @@ export default function Feed() {
     const categories = ['All', 'Tech', 'Politics', 'Business', 'Entertainment', 'Sports', 'Science'];
 
     const fetchFeed = async (pageNum, cat = 'All') => {
+        // Cache Check for Page 1
+        if (pageNum === 1 && feedCache[cat] && feedCache[cat].length > 0) {
+            setItems(feedCache[cat]);
+            setLoading(false);
+            return;
+        }
+
         if (loading) return;
         setLoading(true);
         try {
@@ -78,12 +86,18 @@ export default function Feed() {
 
     // Initial Load & Tab Change
     useEffect(() => {
-        setItems([]); // Clear on switch
-        setPage(1);
-        setHasMore(true);
-
         if (feedTab === 'trending') {
-            fetchFeed(1, selectedCategory);
+            if (feedCache[selectedCategory]) {
+                setItems(feedCache[selectedCategory]);
+                setLoading(false);
+                setPage(1);
+                setHasMore(true);
+            } else {
+                setItems([]);
+                setPage(1);
+                setHasMore(true);
+                fetchFeed(1, selectedCategory);
+            }
         } else {
             fetchSaved();
         }
