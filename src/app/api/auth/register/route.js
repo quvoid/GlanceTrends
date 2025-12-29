@@ -20,10 +20,22 @@ export async function POST(request) {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Generate handle (e.g. John Doe -> @johndoe123)
+        const baseHandle = name.toLowerCase().replace(/\s+/g, '');
+        const uniqueSuffix = Math.floor(Math.random() * 10000);
+        const handle = `@${baseHandle}${uniqueSuffix}`;
+
+        // Default avatar
+        const image = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+
         const user = await User.create({
             name,
             email,
             password: hashedPassword,
+            handle,
+            image,
+            bio: 'New to GlanceTrends!',
+            verified: false
         });
 
         return NextResponse.json({ success: true, userId: user._id });
