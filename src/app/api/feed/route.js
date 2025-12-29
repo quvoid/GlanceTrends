@@ -61,7 +61,21 @@ export async function GET(request) {
             const llmResult = await summarizeNews(article.text);
             if (!llmResult) return null;
 
-            const { summary, category, sentiment } = llmResult;
+            const { summary, category: llmCategory, sentiment } = llmResult;
+
+            // Helper to enforce consistent categorization
+            const assignCategory = (text, defaultCat) => {
+                const lower = text.toLowerCase();
+                if (lower.match(/\b(ai|tech|code|software|app|google|apple|microsoft|crypto|bitcoin)\b/)) return 'Tech';
+                if (lower.match(/\b(election|vote|senate|congress|minister|policy|law|government)\b/)) return 'Politics';
+                if (lower.match(/\b(stock|market|money|economy|business|startup|ipo|trade)\b/)) return 'Business';
+                if (lower.match(/\b(movie|music|film|star|celebrity|actor|song|netflix|game)\b/)) return 'Entertainment';
+                if (lower.match(/\b(sport|ball|score|team|player|league|cup|nba|nfl)\b/)) return 'Sports';
+                if (lower.match(/\b(science|space|nasa|planet|biology|virus|health|study)\b/)) return 'Science';
+                return defaultCat || 'General';
+            };
+
+            const category = assignCategory(article.title + ' ' + summary, llmCategory);
 
             // Get DB interactions
             const interactions = await Interaction.find({ articleUrl: article.url });
