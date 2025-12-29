@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Navigation from '@/components/Navigation';
 import FlashCard from '@/components/FlashCard';
 import CreateFlashCardModal from '@/components/CreateFlashCardModal';
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import { useUser } from '@/context/UserContext';
 import { useSearchParams } from 'next/navigation';
 
-export default function ExplorePage() {
+function ExploreContent() {
     const { user } = useUser() || { user: { name: 'You', handle: '@you' } };
     const searchParams = useSearchParams();
 
@@ -156,5 +156,13 @@ export default function ExplorePage() {
                 />
             )}
         </div>
+    );
+}
+
+export default function ExplorePage() {
+    return (
+        <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>Loading...</div>}>
+            <ExploreContent />
+        </Suspense>
     );
 }
