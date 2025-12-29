@@ -48,11 +48,22 @@ export default function Feed() {
 
             if (data.feed) {
                 setItems(prev => {
+                    let updatedList;
                     // Reset if page 1
-                    if (pageNum === 1) return data.feed;
+                    if (pageNum === 1) {
+                        updatedList = data.feed;
+                    } else {
+                        const newItems = data.feed.filter(item => !prev.some(p => p.id === item.id));
+                        updatedList = [...prev, ...newItems];
+                    }
 
-                    const newItems = data.feed.filter(item => !prev.some(p => p.id === item.id));
-                    return [...prev, ...newItems];
+                    // Update Cache
+                    setFeedCache(prevCache => ({
+                        ...prevCache,
+                        [cat]: updatedList
+                    }));
+
+                    return updatedList;
                 });
             }
             // ... (rest of logic handles trending/hasMore)
