@@ -35,8 +35,24 @@ export async function GET(request) {
         let twitter = [];
         let reddit = [];
 
+        const CATEGORY_SUBTOPICS = {
+            'Tech': ['Artificial Intelligence News', 'Latest Gadgets', 'Silicon Valley News', 'Cybersecurity Updates', 'Tech Industry Trends'],
+            'Politics': ['Global Politics', 'Election News', 'Government Policy', 'Senate Updates', 'International Relations'],
+            'Business': ['Stock Market News', 'Global Economy', 'Startup News', 'Cryptocurrency updates', 'Business Trends'],
+            'Entertainment': ['Hollywood News', 'Celebrity Gossip', 'New Movie Releases', 'Music Industry News', 'Netflix Trends'],
+            'Sports': ['Football News', 'NBA Updates', 'Cricket Match Results', 'Tennis News', 'F1 Racing'],
+            'Science': ['Space Exploration', 'New Scientific Discoveries', 'Health and Medicine', 'Climate Change News', 'NASA Updates']
+        };
+
         if (query) {
-            keywords = [query];
+            // Check if query is a broad category
+            const subtopics = CATEGORY_SUBTOPICS[query];
+            if (subtopics) {
+                // Return a mix of subtopics for a rich feed
+                keywords = subtopics;
+            } else {
+                keywords = [query];
+            }
         } else {
             const trends = await getTrendingKeywords();
             keywords = trends.all;
@@ -61,7 +77,21 @@ export async function GET(request) {
             const llmResult = await summarizeNews(article.text);
             if (!llmResult) return null;
 
-            const { summary, category, sentiment } = llmResult;
+            const { summary, category: llmCategory, sentiment } = llmResult;
+
+            // Helper to enforce consistent categorization
+            const assignCategory = (text, defaultCat) => {
+                const lower = text.toLowerCase();
+                if (lower.match(/\b(ai|tech|code|software|app|google|apple|microsoft|crypto|bitcoin)\b/)) return 'Tech';
+                if (lower.match(/\b(election|vote|senate|congress|minister|policy|law|government)\b/)) return 'Politics';
+                if (lower.match(/\b(stock|market|money|economy|business|startup|ipo|trade)\b/)) return 'Business';
+                if (lower.match(/\b(movie|music|film|star|celebrity|actor|song|netflix|game)\b/)) return 'Entertainment';
+                if (lower.match(/\b(sport|ball|score|team|player|league|cup|nba|nfl)\b/)) return 'Sports';
+                if (lower.match(/\b(science|space|nasa|planet|biology|virus|health|study)\b/)) return 'Science';
+                return defaultCat || 'General';
+            };
+
+            const category = assignCategory(article.title + ' ' + summary, llmCategory);
 
             // Get DB interactions
             const interactions = await Interaction.find({ articleUrl: article.url });
