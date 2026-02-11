@@ -2,14 +2,17 @@
     background-color: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 16px;
-    /* softer corners */
     padding: 24px;
-    /* More padding */
     margin-bottom: 24px;
-    /* More spacing between cards */
     backdrop-filter: blur(var(--backdrop-blur));
     -webkit-backdrop-filter: blur(var(--backdrop-blur));
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
 }
 
 .meta {
@@ -33,36 +36,37 @@
 }
 
 .title {
-    font-size: 1.6rem;
-    /* Larger */
-    font-weight: 600;
-    /* Not too bold */
+    font-size: 1.5rem;
+    font-weight: 700;
     margin-bottom: 14px;
     line-height: 1.35;
     letter-spacing: -0.02em;
 }
 
 .categoryBadge {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 216, 3, 0.12);
     color: var(--foreground);
-    font-size: 0.8rem;
-    padding: 4px 12px;
+    font-size: 0.75rem;
+    padding: 5px 14px;
     border-radius: 20px;
     margin-left: auto;
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: 0.5px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 216, 3, 0.25);
+    text-transform: uppercase;
 }
 
 .summary {
-    font-size: 1.15rem;
-    /* Larger readable text */
-    color: rgba(255, 255, 255, 0.9);
-    /* Lighter text */
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.85);
     margin-bottom: 20px;
-    line-height: 1.8;
-    /* Very readable */
+    line-height: 1.7;
     font-weight: 300;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .actions {
@@ -78,8 +82,14 @@
     gap: 6px;
     font-size: 1rem;
     color: var(--text-secondary);
-    transition: color 0.2s;
-    transition: color 0.2s;
+    transition: color 0.2s ease, transform 0.15s ease;
+    border-radius: 8px;
+    padding: 4px 8px;
+}
+
+.actionBtn:hover {
+    color: var(--foreground);
+    transform: scale(1.05);
 }
 
 .activeAction {
@@ -91,22 +101,21 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    background: #333;
-    color: #fff;
+    background: var(--accent);
+    color: #272343;
     border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.9rem;
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-size: 0.85rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(255, 216, 3, 0.3);
 }
 
 .stealBtn:hover {
-    background: #444;
-}
-
-.actionBtn:hover {
-    color: var(--foreground);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(255, 216, 3, 0.4);
 }
 
 .commentsSection {
@@ -247,4 +256,46 @@
     text-align: center;
     color: var(--text-secondary);
     padding: 20px;
+}
+
+/* ===== Light Theme ===== */
+[data-theme='light'] .card {
+    background: #faf8f3;
+    border-color: #e3f6f5;
+    box-shadow: 0 2px 16px rgba(39, 35, 67, 0.06);
+}
+
+[data-theme='light'] .card:hover {
+    box-shadow: 0 8px 32px rgba(39, 35, 67, 0.12);
+}
+
+[data-theme='light'] .summary {
+    color: #2d334a;
+}
+
+[data-theme='light'] .categoryBadge {
+    background: rgba(255, 216, 3, 0.15);
+    border-color: rgba(255, 216, 3, 0.3);
+}
+
+[data-theme='light'] .comment {
+    background: #edeae4;
+}
+
+[data-theme='light'] .friendItem {
+    background: #edeae4;
+}
+
+[data-theme='light'] .sendBtn {
+    color: #272343;
+}
+
+[data-theme='light'] .modal {
+    background: #faf8f3;
+    border-color: #e3f6f5;
+    box-shadow: 0 10px 40px rgba(39, 35, 67, 0.15);
+}
+
+[data-theme='light'] .modalOverlay {
+    background: rgba(39, 35, 67, 0.4);
 }

@@ -68,3 +68,26 @@
         transform: translate(100px, 50px) scale(1.1);
     }
 }
+
+/* ===== Light Theme ===== */
+[data-theme='light'] .background {
+    background: #faf8f3;
+}
+
+[data-theme='light'] .blob1 {
+    background: radial-gradient(circle, rgba(255, 216, 3, 0.12), transparent);
+}
+
+[data-theme='light'] .blob2 {
+    background: radial-gradient(circle, rgba(255, 183, 77, 0.1), transparent);
+}
+
+[data-theme='light'] .blob3 {
+    background: radial-gradient(circle, rgba(232, 228, 221, 0.3), transparent);
+}
+
+[data-theme='light'] .grid {
+    background-image:
+        linear-gradient(rgba(39, 35, 67, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(39, 35, 67, 0.03) 1px, transparent 1px);
+}

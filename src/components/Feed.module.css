@@ -88,24 +88,28 @@
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border);
     color: var(--text-secondary);
-    padding: 8px 18px;
-    border-radius: 20px;
-    font-size: 0.9rem;
+    padding: 8px 20px;
+    border-radius: 24px;
+    font-size: 0.85rem;
+    font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
 }
 
 .categoryBtn:hover {
     background: rgba(255, 255, 255, 0.1);
-    border-color: #666;
+    border-color: var(--accent);
     color: var(--foreground);
+    transform: translateY(-1px);
 }
 
 .activeCategory {
     background: var(--accent);
-    color: white;
+    color: #272343;
     border-color: var(--accent);
+    font-weight: 700;
+    box-shadow: 0 2px 12px rgba(255, 216, 3, 0.35);
 }
 
 .empty {
@@ -163,17 +167,18 @@
 .trendingItem {
     display: flex;
     align-items: center;
-    padding: 16px 20px;
+    padding: 14px 20px;
     font-size: 0.95rem;
     color: var(--foreground);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.15s ease;
     gap: 15px;
 }
 
 .trendingItem:hover {
     background: rgba(255, 255, 255, 0.08);
+    transform: translateX(4px);
 }
 
 .trendingItem:last-child {
@@ -200,4 +205,50 @@
 
 .trendingItem:hover .trendAction {
     opacity: 1;
+}
+
+/* ===== Light Theme ===== */
+[data-theme='light'] .categoryBtn {
+    background: #eff0f3;
+    border-color: #e3f6f5;
+    color: #2d334a;
+}
+
+[data-theme='light'] .categoryBtn:hover {
+    background: #e3f6f5;
+    border-color: #ffd803;
+    color: #272343;
+}
+
+[data-theme='light'] .activeCategory {
+    background: #ffd803;
+    color: #272343;
+    border-color: #ffd803;
+}
+
+[data-theme='light'] .trendingContainer {
+    background: #faf8f3;
+    border: 1px solid #e3f6f5;
+    box-shadow: 0 4px 20px rgba(39, 35, 67, 0.08);
+}
+
+[data-theme='light'] .tabContainer {
+    border-bottom: 1px solid #e3f6f5;
+}
+
+[data-theme='light'] .tab:hover {
+    background: #edeae4;
+}
+
+[data-theme='light'] .activeTab {
+    background: rgba(255, 216, 3, 0.1);
+    border-bottom-color: #ffd803;
+}
+
+[data-theme='light'] .trendingItem {
+    border-bottom-color: #eff0f3;
+}
+
+[data-theme='light'] .trendingItem:hover {
+    background: #edeae4;
 }

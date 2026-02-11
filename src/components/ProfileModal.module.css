@@ -151,3 +151,24 @@
 .stat span {
     color: var(--text-secondary);
 }
+
+/* ===== Light Theme ===== */
+[data-theme='light'] .overlay {
+    background: rgba(39, 35, 67, 0.4);
+}
+
+[data-theme='light'] .modal {
+    background: #faf8f3;
+    border-color: #e3f6f5;
+    box-shadow: 0 20px 50px rgba(39, 35, 67, 0.15);
+}
+
+[data-theme='light'] .avatar {
+    background: #ffd803;
+    color: #272343;
+}
+
+[data-theme='light'] .followBtn {
+    background: #ffd803;
+    color: #272343;
+}

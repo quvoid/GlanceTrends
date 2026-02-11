@@ -446,3 +446,72 @@
 .resizer:hover {
     background: var(--accent) !important;
 }
+
+/* ===== Light Theme ===== */
+[data-theme='light'] .friendsList {
+    background: #faf8f3;
+    border-color: #e3f6f5;
+}
+
+[data-theme='light'] .header {
+    border-bottom-color: #e3f6f5;
+    background: #fffffe;
+}
+
+[data-theme='light'] .searchInput {
+    background: #edeae4;
+    border-color: #e3f6f5;
+    color: #272343;
+}
+
+[data-theme='light'] .searchBox {
+    border-bottom-color: #eff0f3;
+}
+
+[data-theme='light'] .listItem:hover {
+    background: #edeae4;
+}
+
+[data-theme='light'] .listItem.active {
+    background: rgba(255, 216, 3, 0.1);
+}
+
+[data-theme='light'] .avatar {
+    background: #ffd803;
+    color: #272343;
+}
+
+[data-theme='light'] .msgContent {
+    background: #edeae4;
+    border-color: #e3f6f5;
+    color: #272343;
+}
+
+[data-theme='light'] .inputWrapper {
+    background: #edeae4;
+    border-color: #e3f6f5;
+}
+
+[data-theme='light'] .chatInput {
+    background: #edeae4;
+    color: #272343;
+}
+
+[data-theme='light'] .chatHeader {
+    background: rgba(255, 255, 255, 0.8);
+    border-bottom-color: #e3f6f5;
+}
+
+[data-theme='light'] .newsBubble {
+    background: #faf8f3;
+    border-color: #e3f6f5;
+}
+
+[data-theme='light'] .newsImage {
+    background: #eff0f3;
+}
+
+[data-theme='light'] .addBtn {
+    background: #ffd803;
+    color: #272343;
+}

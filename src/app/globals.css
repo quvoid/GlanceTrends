@@ -13,12 +13,12 @@
 }
 
 [data-theme='light'] {
-  --background: #ffffff;
-  --foreground: #101010;
-  --card-bg: rgba(255, 255, 255, 0.85);
-  --border: #e0e0e0;
-  --accent: #0070f3;
-  --text-secondary: #666;
+  --background: #faf8f3;
+  --foreground: #272343;
+  --card-bg: #f2efea;
+  --border: #e8e4dd;
+  --accent: #ffd803;
+  --text-secondary: #5c5878;
   --backdrop-blur: 10px;
 }
 
@@ -31,14 +31,12 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  /* Ensure sans-serif is used if var is missing */
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   line-height: 1.7;
-  /* Improved line height */
-  font-weight: 300;
-  /* Lighter font weight */
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {
@@ -100,6 +98,15 @@ button {
   letter-spacing: 8px;
   color: var(--text-secondary);
   font-weight: 400;
+}
+
+/* Light theme logo */
+[data-theme='light'] .logo {
+  background: linear-gradient(to right, #272343, #ffd803);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

@@ -174,8 +174,8 @@ export default function Feed() {
                     </div>
                 </div>
 
-                {finalItems.map((item) => (
-                    <NewsCard key={item.id || item._id} item={item} />
+                {finalItems.map((item, index) => (
+                    <NewsCard key={`${item.id || item._id}-${index}`} item={item} />
                 ))}
 
                 {loading && (
