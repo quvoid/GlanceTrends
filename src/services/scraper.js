@@ -1,10 +1,12 @@
 import axios from 'axios';
+import { JSDOM } from 'jsdom';
+import { Readability } from '@mozilla/readability';
 import * as cheerio from 'cheerio';
 
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 /**
- * Scrapes news using Google News RSS (Reliable Fallback).
+ * Scrapes news using Google News RSS and Readability for content extraction.
  * @param {string} keyword 
  * @returns {Promise<{title: string, text: string, url: string, source: string} | null>}
  */
@@ -13,12 +15,11 @@ export async function scrapeNews(keyword) {
         console.log(`Searching for: ${keyword}`);
 
         // 1. Fetch Google News RSS (XML)
-        // hl=en-IN&gl=IN&ceid=IN:en for India specific news
         const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(keyword)}&hl=en-IN&gl=IN&ceid=IN:en`;
 
         const rssRes = await axios.get(rssUrl, {
             headers: { 'User-Agent': USER_AGENT },
-            timeout: 8000 // Increased timeout
+            timeout: 8000
         });
 
         const $rss = cheerio.load(rssRes.data, { xmlMode: true });
@@ -29,60 +30,61 @@ export async function scrapeNews(keyword) {
             return null;
         }
 
-        // Try the first 3 items in case the first one is protected/unscrapable
+        // Try the first 3 items
         for (let i = 0; i < Math.min(items.length, 3); i++) {
             try {
                 const item = cheerio.load(items[i]);
                 const title = item('title').text();
                 const link = item('link').text();
-                const pubDate = item('pubDate').text();
                 const sourceName = item('source').text() || 'Google News';
+                const pubDate = item('pubDate').text();
 
                 console.log(`[Item ${i + 1}] Found RSS item: ${title}`);
 
-                // 2. Try to fetch full content from the source URL
+                // 2. Try full scrape with Readability
                 let fullText = '';
                 try {
                     console.log(`Attempting full scrape for: ${link}`);
                     const articleRes = await axios.get(link, {
                         headers: {
                             'User-Agent': USER_AGENT,
-                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                            'Accept-Language': 'en-US,en;q=0.9'
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
                         },
-                        timeout: 5000
+                        timeout: 8000
                     });
 
-                    const $article = cheerio.load(articleRes.data);
-                    // Remove junk
-                    $article('script, style, nav, header, footer, iframe, .ad, .advertisement, .cookie-banner, .menu, .sidebar, .newsletter, .popup').remove();
+                    const dom = new JSDOM(articleRes.data, {
+                        url: articleRes.request.res.responseUrl || link
+                    });
 
-                    const paragraphs = [];
-                    // Try specific article selectors first, then generic
-                    $article('[itemprop="articleBody"], main article, .article-body, .story-body, .content-body, p').each((i, el) => {
-                        const txt = $article(el).text().trim();
-                        // Relaxed length check and avoid overly short cookie warnings
-                        if (txt.length > 25 && !txt.toLowerCase().includes('cookie') && !txt.toLowerCase().includes('subscribe')) {
-                            paragraphs.push(txt);
+                    const reader = new Readability(dom.window.document);
+                    const article = reader.parse();
+
+                    if (article && article.textContent && article.textContent.length > 200) {
+                        // Clean up the text further if needed
+                        let content = article.textContent.trim();
+                        // Remove repetitive title if it appears at start
+                        if (content.startsWith(title)) {
+                            content = content.replace(title, '').trim();
                         }
-                    });
 
-                    // Take more paragraphs
-                    fullText = paragraphs.slice(0, 20).join('\n\n');
+                        fullText = content;
+                        console.log(`Readability extraction success: ${fullText.length} chars`);
+                    } else {
+                        console.log('Readability returned empty or short content.');
+                    }
+
                 } catch (e) {
                     console.log(`Full scrape failed for ${link} (${e.message})`);
                 }
 
-                // 3. Validation & Fallback
-                if (fullText && fullText.length > 200) {
+                if (fullText) {
                     return {
                         title,
                         text: fullText,
                         url: link,
                         source: sourceName
                     };
-                } else {
-                    console.log(`Content too short (${fullText ? fullText.length : 0} chars), trying next item...`);
                 }
 
             } catch (innerErr) {
@@ -90,19 +92,19 @@ export async function scrapeNews(keyword) {
             }
         }
 
-        // 4. Ultimate Fallback: If all full scrapes fail, return the first item's snippet if available
-        console.log('All full scrapes failed/insufficient. Using RSS snippet fallback.');
+        // 3. Fallback: Use RSS description but clean it better
+        console.log('All full scrapes failed. Using RSS snippet fallback.');
         const firstItem = cheerio.load(items[0]);
-        const title = firstItem('title').text();
-        let snippet = firstItem('description').text();
-        snippet = cheerio.load(snippet).text(); // Clean HTML
+        const cleanDescription = cheerio.load(firstItem('description').text()).text().trim();
 
-        // Combine title and snippet to ensure decent length
-        const combinedText = `${title}.\n\n${snippet}\n\n(Source: ${firstItem('source').text() || 'Google News'} - ${firstItem('pubDate').text()})`;
+        // If description is just the link or very short, refrain from using it as "article"
+        if (cleanDescription.length < 50) {
+            return null; // Better to return nothing than garbage
+        }
 
         return {
-            title: title,
-            text: combinedText,
+            title: firstItem('title').text(),
+            text: `${firstItem('title').text()}.\n\n${cleanDescription}`,
             url: firstItem('link').text(),
             source: firstItem('source').text() || 'Google News'
         };
