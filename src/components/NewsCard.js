@@ -155,16 +155,20 @@ export default function NewsCard({ item }) {
     // Detect if summary is just repeating the title
     const isSummaryRedundant = (() => {
         if (!item.summary || !item.title) return true;
-        const normalize = (s) => s.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+        // Normalize: lowercase, strip all non-alphanumeric, collapse whitespace
+        const normalize = (s) => s.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
         const normTitle = normalize(item.title);
         const normSummary = normalize(item.summary);
         if (normSummary.length < 20) return true;
-        // Check if summary starts with or contains the full title
+        // Direct match after normalization
+        if (normSummary === normTitle) return true;
         if (normSummary.startsWith(normTitle)) return true;
-        // Check character-level similarity ratio
-        const shorter = normTitle.length < normSummary.length ? normTitle : normSummary;
-        const longer = normTitle.length < normSummary.length ? normSummary : normTitle;
-        if (longer.includes(shorter) && shorter.length / longer.length > 0.6) return true;
+        if (normTitle.startsWith(normSummary)) return true;
+        // Word overlap check: if most summary words are in the title, it's redundant
+        const titleWords = new Set(normTitle.split(' '));
+        const summaryWords = normSummary.split(' ');
+        const overlap = summaryWords.filter(w => titleWords.has(w)).length;
+        if (overlap / summaryWords.length > 0.75) return true;
         return false;
     })();
 
