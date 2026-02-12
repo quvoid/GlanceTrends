@@ -152,6 +152,22 @@ export default function NewsCard({ item }) {
         return { color: '#29b6f6', label: 'Neutral Vibe' }; // Blue
     };
 
+    // Detect if summary is just repeating the title
+    const isSummaryRedundant = (() => {
+        if (!item.summary || !item.title) return true;
+        const normalize = (s) => s.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+        const normTitle = normalize(item.title);
+        const normSummary = normalize(item.summary);
+        if (normSummary.length < 20) return true;
+        // Check if summary starts with or contains the full title
+        if (normSummary.startsWith(normTitle)) return true;
+        // Check character-level similarity ratio
+        const shorter = normTitle.length < normSummary.length ? normTitle : normSummary;
+        const longer = normTitle.length < normSummary.length ? normSummary : normTitle;
+        if (longer.includes(shorter) && shorter.length / longer.length > 0.6) return true;
+        return false;
+    })();
+
     const sentimentColor = item.sentiment === 'Positive' ? '#4caf50' :
         item.sentiment === 'Negative' ? '#f44336' : '#777';
 
@@ -178,7 +194,9 @@ export default function NewsCard({ item }) {
                 <a href={item.url} target="_blank" rel="noopener noreferrer">{item.title}</a>
             </h2>
 
-            <p className={styles.summary}>{item.summary}</p>
+            {!isSummaryRedundant && (
+                <p className={styles.summary}>{item.summary}</p>
+            )}
 
             <div className={styles.actions}>
                 <button onClick={handleLike} className={styles.actionBtn}>
