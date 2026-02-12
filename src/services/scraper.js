@@ -104,7 +104,7 @@ export async function scrapeNews(keyword) {
 
         return {
             title: firstItem('title').text(),
-            text: `${firstItem('title').text()}.\n\n${cleanDescription}`,
+            text: cleanDescription,
             url: firstItem('link').text(),
             source: firstItem('source').text() || 'Google News'
         };

@@ -7,21 +7,24 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  * @param {string} text 
  * @returns {Promise<{summary: string, category: string, sentiment: string} | null>}
  */
-export async function summarizeNews(text) {
+export async function summarizeNews(text, title = '') {
     if (!text || text.length < 10) return null;
 
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `
-        You are a news assistant. Analyze the following news text and extract the following:
-        1. A 2-sentence engaging summary.
+        You are a news assistant. You are given a news article with a TITLE and BODY text.
+        Your job is to produce:
+        1. A 2-sentence engaging summary that ADDS context or detail beyond the title. Do NOT repeat the title verbatim. The summary must provide new information.
         2. A category from: "Tech", "Politics", "Entertainment", "Sports", "Business", "World", "Health", "Science".
         3. A sentiment: "Positive", "Neutral", "Negative".
 
         Return ONLY a raw JSON object (no markdown) with keys: "summary", "category", "sentiment".
 
-        Text:
+        Title: ${title}
+
+        Body:
         ${text.slice(0, 3000)}
         `;
 

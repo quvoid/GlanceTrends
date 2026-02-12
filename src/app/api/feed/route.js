@@ -74,7 +74,7 @@ export async function GET(request) {
             if (!article) return null;
 
             // Summarize & Analyze
-            const llmResult = await summarizeNews(article.text);
+            const llmResult = await summarizeNews(article.text, article.title);
             if (!llmResult) return null;
 
             const { summary, category: llmCategory, sentiment } = llmResult;
