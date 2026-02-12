@@ -28,7 +28,7 @@ export async function POST(request) {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
         const token = await new SignJWT({ userId: user._id.toString(), email: user.email })
             .setProtectedHeader({ alg: 'HS256' })
-            .setExpirationTime('24h')
+            .setExpirationTime('30d')
             .sign(secret);
 
         const response = NextResponse.json({ success: true, user: { name: user.name, email: user.email } });
@@ -37,7 +37,7 @@ export async function POST(request) {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 86400, // 1 day
+            maxAge: 30 * 24 * 60 * 60, // 30 days
             path: '/',
         });
 
