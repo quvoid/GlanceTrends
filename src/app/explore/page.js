@@ -11,7 +11,7 @@ import { useUser } from '@/context/UserContext';
 import { useSearchParams } from 'next/navigation';
 
 function ExploreContent() {
-    const { user } = useUser() || { user: { name: 'You', handle: '@you' } };
+    const { user } = useUser();
     const searchParams = useSearchParams();
 
     // States

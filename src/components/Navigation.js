@@ -9,7 +9,7 @@ import { usePathname } from 'next/navigation';
 
 export default function Navigation() {
     const { theme, toggleTheme } = useTheme() || {};
-    const { user } = useUser() || { user: { avatar: '?' } }; // Fallback
+    const { user, loading } = useUser();
     const [unreadCount, setUnreadCount] = useState(0);
     const pathname = usePathname();
 
@@ -17,17 +17,19 @@ export default function Navigation() {
         const fetchUnread = async () => {
             try {
                 const res = await fetch('/api/messages/unread');
-                const data = await res.json();
-                setUnreadCount(data.count || 0);
+                if (res.ok) {
+                    const data = await res.json();
+                    setUnreadCount(data.count || 0);
+                }
             } catch (e) {
-                console.error(e);
+                // console.error(e);
             }
         };
 
-        fetchUnread();
+        if (user) fetchUnread();
         const interval = setInterval(fetchUnread, 10000);
         return () => clearInterval(interval);
-    }, []);
+    }, [user]);
 
     const navItems = [
         { icon: Home, label: 'Home', href: '/' },
@@ -39,6 +41,8 @@ export default function Navigation() {
         { icon: User, label: 'Profile', href: '/profile' },
         { icon: MoreHorizontal, label: 'More' },
     ];
+
+    const userInitial = user?.name ? user.name[0].toUpperCase() : '?';
 
     return (
         <nav className={styles.nav}>
@@ -79,7 +83,7 @@ export default function Navigation() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color: 'white', fontWeight: 'bold', fontSize: '1.2rem', background: '#7b1fa2'
                 }}>
-                    {user?.avatar}
+                    {loading ? '...' : userInitial}
                 </div>
             </Link>
         </nav>

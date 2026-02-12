@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
+import { useUser } from '@/context/UserContext';
+
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const { refreshUser } = useUser();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -25,6 +28,7 @@ export default function LoginPage() {
             });
 
             if (res.ok) {
+                await refreshUser();
                 router.push('/');
                 router.refresh();
             } else {

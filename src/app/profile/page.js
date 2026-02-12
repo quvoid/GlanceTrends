@@ -1,24 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
-import styles from '@/components/Feed.module.css'; // Reuse layout styles
+import styles from '@/components/Feed.module.css';
 import { useUser } from '@/context/UserContext';
-import { Camera, Save, Lock, User } from 'lucide-react';
+import { Camera, Save, Lock, User as UserIcon } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
-    const { user, updateUser } = useUser();
+    const { user, updateUser, loading } = useUser();
     const { addToast } = useToast();
+    const router = useRouter();
 
-    // Local state for form
-    const [name, setName] = useState(user.name);
-    const [handle, setHandle] = useState(user.handle);
-    const [bio, setBio] = useState(user.bio);
+    const [name, setName] = useState('');
+    const [handle, setHandle] = useState('');
+    const [bio, setBio] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
 
-    const handleSave = (e) => {
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push('/login');
+        } else if (user) {
+            setName(user.name || '');
+            setHandle(user.handle || '');
+            setBio(user.bio || '');
+        }
+    }, [user, loading, router]);
+
+    const handleSave = async (e) => {
         e.preventDefault();
 
         if (password && password !== confirmPassword) {
@@ -26,16 +38,36 @@ export default function ProfilePage() {
             return;
         }
 
-        updateUser({ name, handle, bio });
-        addToast('Profile updated successfully!', 'success');
+        setIsSaving(true);
+        const updates = { name, handle, bio };
+        if (password) updates.password = password;
 
-        if (password) {
-            // Mock password change
+        const result = await updateUser(updates);
+
+        if (result.success) {
+            addToast('Profile updated successfully!', 'success');
             setPassword('');
             setConfirmPassword('');
-            addToast('Password changed!', 'success');
+        } else {
+            addToast(result.error || 'Failed to update profile', 'error');
         }
+        setIsSaving(false);
     };
+
+    if (loading) {
+        return (
+            <div className={styles.layout}>
+                <div className={styles.navContainer}>
+                    <Navigation />
+                </div>
+                <div className={styles.main} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                    <div style={{ color: 'var(--text-secondary)' }}>Loading profile...</div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!user) return null; // Should redirect in useEffect
 
     return (
         <div className={styles.layout}>
@@ -72,7 +104,7 @@ export default function ProfilePage() {
                             marginBottom: '10px',
                             position: 'relative'
                         }}>
-                            {user.avatar}
+                            {user.name ? user.name[0].toUpperCase() : 'U'}
                             <button style={{
                                 position: 'absolute',
                                 bottom: '0',
@@ -94,13 +126,14 @@ export default function ProfilePage() {
                         </div>
                         <h2 style={{ fontSize: '1.4rem' }}>{user.name}</h2>
                         <span style={{ color: 'var(--text-secondary)' }}>{user.handle}</span>
+                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '4px' }}>{user.email}</span>
                     </div>
 
                     <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Full Name</label>
                             <div style={{ position: 'relative' }}>
-                                <User size={18} style={{ position: 'absolute', top: '12px', left: '12px', color: '#888' }} />
+                                <UserIcon size={18} style={{ position: 'absolute', top: '12px', left: '12px', color: '#888' }} />
                                 <input
                                     type="text"
                                     value={name}
@@ -196,15 +229,16 @@ export default function ProfilePage() {
 
                         <button
                             type="submit"
+                            disabled={isSaving}
                             style={{
                                 marginTop: '10px',
-                                background: 'var(--accent)',
+                                background: isSaving ? '#555' : 'var(--accent)',
                                 color: 'white',
                                 border: 'none',
                                 padding: '12px',
                                 borderRadius: '8px',
                                 fontWeight: 'bold',
-                                cursor: 'pointer',
+                                cursor: isSaving ? 'not-allowed' : 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -212,8 +246,7 @@ export default function ProfilePage() {
                                 transition: 'opacity 0.2s'
                             }}
                         >
-                            <Save size={18} />
-                            Save Changes
+                            {isSaving ? 'Saving...' : <><Save size={18} /> Save Changes</>}
                         </button>
                     </form>
                 </div>
@@ -226,15 +259,15 @@ export default function ProfilePage() {
                     <div style={{ padding: '10px', color: '#ccc' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                             <span>Reports Filed</span>
-                            <strong>12</strong>
+                            <strong>0</strong>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                             <span>Total Likes</span>
-                            <strong>1.4K</strong>
+                            <strong>0</strong>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span>Days Active</span>
-                            <strong>45</strong>
+                            <span>Joined</span>
+                            <strong>{new Date(user.createdAt || Date.now()).toLocaleDateString()}</strong>
                         </div>
                     </div>
                 </div>
