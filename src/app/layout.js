@@ -5,6 +5,7 @@ import ScrollProgress from "@/components/ScrollProgress";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { UserProvider } from "@/context/UserContext";
+import { FeedCacheProvider } from "@/context/FeedCacheContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,9 +25,11 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
           <UserProvider>
             <ToastProvider>
-              <ScrollProgress />
-              <Background />
-              {children}
+              <FeedCacheProvider>
+                <ScrollProgress />
+                <Background />
+                {children}
+              </FeedCacheProvider>
             </ToastProvider>
           </UserProvider>
         </ThemeProvider>

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import Navigation from '@/components/Navigation';
+import Sidebar from '@/components/Sidebar';
 import FlashCard from '@/components/FlashCard';
 import CreateFlashCardModal from '@/components/CreateFlashCardModal';
-import styles from '@/components/Feed.module.css'; // Reusing Feed styles for layout
+import styles from '@/components/Feed.module.css';
 import { PenSquare, Compass } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useUser } from '@/context/UserContext';
@@ -66,15 +66,17 @@ function ExploreContent() {
 
     return (
         <div className={styles.layout}>
-            <div className={styles.navContainer}>
-                <Navigation />
+            {/* Left Column: Sidebar (consistent) */}
+            <div className={styles.sidebarCol}>
+                <Sidebar />
             </div>
 
-            <div className={styles.main}>
+            {/* Middle Column: Explore Content */}
+            <div className={styles.feedCol}>
                 <div className={styles.controls} style={{ marginBottom: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '16px' }}>
-                        <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <Compass size={32} color="var(--accent)" />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Compass size={28} color="var(--accent)" />
                             Explore Reports
                         </h1>
                         <button
@@ -83,18 +85,19 @@ function ExploreContent() {
                                 background: 'var(--accent)',
                                 color: 'white',
                                 border: 'none',
-                                padding: '10px 20px',
+                                padding: '8px 18px',
                                 borderRadius: '25px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
                                 cursor: 'pointer',
                                 fontWeight: '600',
+                                fontSize: '0.85rem',
                                 boxShadow: '0 4px 15px rgba(29, 155, 240, 0.4)'
                             }}
                         >
-                            <PenSquare size={18} />
-                            Write Application
+                            <PenSquare size={16} />
+                            Write
                         </button>
                     </div>
 
@@ -111,42 +114,41 @@ function ExploreContent() {
                     </div>
                 </div>
 
-                <div className={styles.feed}>
-                    {filteredCards.length === 0 && (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
-                            No reports in #{selectedKeyword} yet. Be the first to write one!
-                        </div>
-                    )}
+                {filteredCards.length === 0 && (
+                    <div className={styles.empty}>
+                        No reports in #{selectedKeyword} yet. Be the first to write one!
+                    </div>
+                )}
 
-                    {filteredCards.map(card => (
-                        <motion.div key={card.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                            <FlashCard item={card} />
-                        </motion.div>
-                    ))}
-                </div>
+                {filteredCards.map(card => (
+                    <motion.div key={card.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                        <FlashCard item={card} />
+                    </motion.div>
+                ))}
             </div>
 
-            <aside className={styles.sidebar}>
-                <div className={styles.trendingContainer}>
-                    <h3 style={{ marginBottom: '16px', fontSize: '1.2rem', padding: '0 10px' }}>Trending Reporters</h3>
-                    <ul className={styles.trendingList}>
-                        <li className={styles.trendingItem} style={{ alignItems: 'center', gap: '10px' }}>
-                            <div className={styles.avatar} style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>T</div>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ fontWeight: 'bold' }}>Tech Insider</span>
-                                <span style={{ fontSize: '0.8rem', color: '#888' }}>@techinsider</span>
+            {/* Right Column: Trending Reporters */}
+            <div className={styles.panelCol}>
+                <div style={{ padding: '24px 16px', position: 'sticky', top: 0 }}>
+                    <h3 style={{ marginBottom: '20px', fontSize: '1.1rem', fontWeight: '700' }}>Trending Reporters</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        {[
+                            { name: "Tech Insider", handle: "@techinsider", avatar: "T", color: "#667eea" },
+                            { name: "Sarah Connor", handle: "@skynet_hater", avatar: "S", color: "#ff6b6b" }
+                        ].map((reporter, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '12px', cursor: 'pointer', transition: 'background 0.2s' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: reporter.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
+                                    {reporter.avatar}
+                                </div>
+                                <div>
+                                    <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{reporter.name}</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{reporter.handle}</div>
+                                </div>
                             </div>
-                        </li>
-                        <li className={styles.trendingItem} style={{ alignItems: 'center', gap: '10px' }}>
-                            <div className={styles.avatar} style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#ff6b6b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>S</div>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ fontWeight: 'bold' }}>Sarah Connor</span>
-                                <span style={{ fontSize: '0.8rem', color: '#888' }}>@skynet_hater</span>
-                            </div>
-                        </li>
-                    </ul>
+                        ))}
+                    </div>
                 </div>
-            </aside>
+            </div>
 
             {showCreateModal && (
                 <CreateFlashCardModal

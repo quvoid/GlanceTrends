@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import Navigation from '@/components/Navigation';
+import Sidebar from '@/components/Sidebar';
 import NewsCard from '@/components/NewsCard';
+import feedStyles from '@/components/Feed.module.css';
 import styles from './search.module.css';
 import { Search as SearchIcon, Loader } from 'lucide-react';
 
@@ -32,12 +33,14 @@ export default function SearchPage() {
     };
 
     return (
-        <div className={styles.container}>
-            <div className={styles.navWrapper}>
-                <Navigation />
+        <div className={feedStyles.layout}>
+            {/* Left Column: Sidebar (consistent) */}
+            <div className={feedStyles.sidebarCol}>
+                <Sidebar />
             </div>
 
-            <div className={styles.content}>
+            {/* Middle Column: Search */}
+            <div className={feedStyles.feedCol}>
                 <div className={styles.searchHeader}>
                     <form onSubmit={handleSearch} className={styles.searchForm}>
                         <input
@@ -69,13 +72,14 @@ export default function SearchPage() {
                         </div>
                     )}
 
-                    <div className={styles.grid}>
-                        {results.map((item, index) => (
-                            <NewsCard key={item.id} item={item} />
-                        ))}
-                    </div>
+                    {results.map((item, index) => (
+                        <NewsCard key={item.id} item={item} />
+                    ))}
                 </div>
             </div>
+
+            {/* Right Column: Empty for search */}
+            <div className={feedStyles.panelCol}></div>
         </div>
     );
 }

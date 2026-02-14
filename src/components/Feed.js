@@ -1,39 +1,38 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import NewsCard from './NewsCard';
 import SkeletonCard from './SkeletonCard';
 import Sidebar from './Sidebar';
 import RightPanel from './RightPanel';
 import styles from './Feed.module.css';
+import { useFeedCache } from '@/context/FeedCacheContext';
 
 export default function Feed() {
-    const [items, setItems] = useState([]);
-    const [savedItems, setSavedItems] = useState([]);
-    const [trendingSources, setTrendingSources] = useState({ twitter: [], reddit: [] });
+    const {
+        getCached, setCached, appendCached,
+        trendingSources, setTrendingSources,
+        savedItems, setSavedItems,
+        savedLoaded, setSavedLoaded
+    } = useFeedCache();
 
-    // UI States
-    const [feedTab, setFeedTab] = useState('trending'); // 'trending' | 'saved'
+    // Local UI states
+    const [feedTab, setFeedTab] = useState('trending');
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [feedCache, setFeedCache] = useState({});
-
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
 
+    // Items displayed from cache
+    const [items, setItems] = useState([]);
+
     const categories = ['All', 'Tech', 'Politics', 'Business', 'Entertainment', 'Sports', 'Science'];
 
-    const fetchFeed = async (pageNum, cat = 'All') => {
-        if (pageNum === 1 && feedCache[cat] && feedCache[cat].length > 0) {
-            setItems(feedCache[cat]);
-            setLoading(false);
-            return;
-        }
-
+    const fetchFeed = useCallback(async (pageNum, cat = 'All') => {
         if (loading) return;
         setLoading(true);
         try {
-            let url = `/api/feed?page=${pageNum}&limit=3`;
+            let url = `/api/feed?page=${pageNum}&limit=10`;
             if (cat !== 'All') {
                 url += `&q=${encodeURIComponent(cat)}`;
             }
@@ -42,22 +41,16 @@ export default function Feed() {
             const data = await res.json();
 
             if (data.feed) {
-                setItems(prev => {
-                    let updatedList;
-                    if (pageNum === 1) {
-                        updatedList = data.feed;
-                    } else {
+                if (pageNum === 1) {
+                    setCached(cat, data.feed);
+                    setItems(data.feed);
+                } else {
+                    appendCached(cat, data.feed);
+                    setItems(prev => {
                         const newItems = data.feed.filter(item => !prev.some(p => p.id === item.id));
-                        updatedList = [...prev, ...newItems];
-                    }
-
-                    setFeedCache(prevCache => ({
-                        ...prevCache,
-                        [cat]: updatedList
-                    }));
-
-                    return updatedList;
-                });
+                        return [...prev, ...newItems];
+                    });
+                }
             }
             if (data.trending && pageNum === 1) {
                 if (data.trendingSources) {
@@ -72,7 +65,7 @@ export default function Feed() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [loading, setCached, appendCached, setTrendingSources]);
 
     const fetchSaved = async () => {
         try {
@@ -80,17 +73,20 @@ export default function Feed() {
             const data = await res.json();
             if (data.bookmarks) {
                 setSavedItems(data.bookmarks);
+                setSavedLoaded(true);
             }
         } catch (e) {
             console.error('Failed to fetch bookmarks');
         }
     };
 
-    // Initial Load & Tab Change
+    // On mount / tab+category change: use cache if available, else fetch
     useEffect(() => {
         if (feedTab === 'trending') {
-            if (feedCache[selectedCategory]) {
-                setItems(feedCache[selectedCategory]);
+            const cached = getCached(selectedCategory);
+            if (cached && cached.length > 0) {
+                // Instantly show cached data — no loading spinner
+                setItems(cached);
                 setLoading(false);
                 setPage(1);
                 setHasMore(true);
@@ -101,14 +97,18 @@ export default function Feed() {
                 fetchFeed(1, selectedCategory);
             }
         } else {
-            fetchSaved();
+            if (savedLoaded) {
+                // Already loaded saved items — show instantly
+            } else {
+                fetchSaved();
+            }
         }
     }, [feedTab, selectedCategory]);
 
     // Infinite scroll
     useEffect(() => {
         const handleScroll = () => {
-            if (feedTab === 'trending' && window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && hasMore && !loading) {
+            if (feedTab === 'trending' && window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000 && hasMore && !loading) {
                 setPage(prev => {
                     const nextPage = prev + 1;
                     fetchFeed(nextPage, selectedCategory);

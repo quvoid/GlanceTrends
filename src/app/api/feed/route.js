@@ -25,7 +25,7 @@ export async function GET(request) {
         await dbConnect();
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get('page')) || 1;
-        const limit = parseInt(searchParams.get('limit')) || 3;
+        const limit = parseInt(searchParams.get('limit')) || 10;
         const offset = (page - 1) * limit;
 
         // 1. Get Keywords (Search or Trending)
