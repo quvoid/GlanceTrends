@@ -43,15 +43,21 @@ export async function getBriefing() {
     }
 
     // Scrape Articles (Parallel, with individual error handling)
-    const articlePromises = keywords.map(async (k) => {
+    // Scrape Articles (Sequential to avoid rate limits + Scraper API load)
+    const articles = [];
+    for (const k of keywords) {
         try {
-            return await scrapeNews(k);
+            console.log(`Briefing: Scraping "${k}"...`);
+            const article = await scrapeNews(k, { maxWait: 60000 });
+            if (article) {
+                articles.push(article);
+            }
+            // Add delay between scrapes to be gentle on Scraper API & Rate Limits
+            await new Promise(r => setTimeout(r, 2000));
         } catch (e) {
             console.error(`Briefing: Scrape failed for "${k}":`, e.message);
-            return null;
         }
-    });
-    const articles = (await Promise.all(articlePromises)).filter(a => a !== null);
+    }
 
     console.log(`Briefing: Got ${articles.length} articles out of ${keywords.length} keywords`);
 
@@ -104,7 +110,7 @@ export async function getBriefing() {
     `;
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
         const result = await model.generateContent(prompt);
         const response = result.response;
         let textResponse = response.text();

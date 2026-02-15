@@ -68,56 +68,68 @@ export async function GET(request) {
             return NextResponse.json({ feed: [], trending: [], hasMore: false });
         }
 
-        const newsPromises = limitedKeywords.map(async (keyword) => {
-            // Scrape
-            const article = await scrapeNews(keyword);
-            if (!article) return null;
+        // Process in batches of 2 to respect LLM rate limits
+        const RESULTS = [];
+        const CONCURRENCY = 2;
 
-            // Summarize & Analyze
-            const llmResult = await summarizeNews(article.text, article.title);
-            if (!llmResult) return null;
+        for (let i = 0; i < limitedKeywords.length; i += CONCURRENCY) {
+            const batch = limitedKeywords.slice(i, i + CONCURRENCY);
+            const batchPromises = batch.map(async (keyword) => {
+                // Scrape (fail fast after 10s to avoid hanging feed)
+                const article = await scrapeNews(keyword, { maxWait: 10000 });
+                if (!article) return null;
 
-            const { summary, category: llmCategory, sentiment } = llmResult;
+                // Summarize & Analyze
+                // Add jitter to avoid synchronized hits
+                await new Promise(r => setTimeout(r, Math.random() * 2000));
 
-            // Helper to enforce consistent categorization
-            const assignCategory = (text, defaultCat) => {
-                const lower = text.toLowerCase();
-                if (lower.match(/\b(ai|tech|code|software|app|google|apple|microsoft|crypto|bitcoin)\b/)) return 'Tech';
-                if (lower.match(/\b(election|vote|senate|congress|minister|policy|law|government)\b/)) return 'Politics';
-                if (lower.match(/\b(stock|market|money|economy|business|startup|ipo|trade)\b/)) return 'Business';
-                if (lower.match(/\b(movie|music|film|star|celebrity|actor|song|netflix|game)\b/)) return 'Entertainment';
-                if (lower.match(/\b(sport|ball|score|team|player|league|cup|nba|nfl)\b/)) return 'Sports';
-                if (lower.match(/\b(science|space|nasa|planet|biology|virus|health|study)\b/)) return 'Science';
-                return defaultCat || 'General';
-            };
+                const llmResult = await summarizeNews(article.text, article.title);
+                if (!llmResult) return null;
 
-            const category = assignCategory(article.title + ' ' + summary, llmCategory);
+                const { summary, category: llmCategory, sentiment } = llmResult;
 
-            // Get DB interactions
-            const interactions = await Interaction.find({ articleUrl: article.url });
+                // Helper to enforce consistent categorization
+                const assignCategory = (text, defaultCat) => {
+                    const lower = text.toLowerCase();
+                    if (lower.match(/\b(ai|tech|code|software|app|google|apple|microsoft|crypto|bitcoin)\b/)) return 'Tech';
+                    if (lower.match(/\b(election|vote|senate|congress|minister|policy|law|government)\b/)) return 'Politics';
+                    if (lower.match(/\b(stock|market|money|economy|business|startup|ipo|trade)\b/)) return 'Business';
+                    if (lower.match(/\b(movie|music|film|star|celebrity|actor|song|netflix|game)\b/)) return 'Entertainment';
+                    if (lower.match(/\b(sport|ball|score|team|player|league|cup|nba|nfl)\b/)) return 'Sports';
+                    if (lower.match(/\b(science|space|nasa|planet|biology|virus|health|study)\b/)) return 'Science';
+                    return defaultCat || 'General';
+                };
 
-            const likes = interactions.filter(i => i.type === 'like').length;
-            const comments = interactions.filter(i => i.type === 'comment').map(i => ({
-                text: i.content,
-                timestamp: i.createdAt
-            }));
+                const category = assignCategory(article.title + ' ' + summary, llmCategory);
 
-            return {
-                id: Buffer.from(article.url).toString('base64'),
-                keyword,
-                title: article.title,
-                summary,
-                category,
-                sentiment,
-                url: article.url,
-                source: article.source,
-                likes,
-                comments
-            };
-        });
+                // Get DB interactions
+                const interactions = await Interaction.find({ articleUrl: article.url });
 
-        const results = await Promise.all(newsPromises);
-        const feed = results.filter(item => item !== null);
+                const likes = interactions.filter(i => i.type === 'like').length;
+                const comments = interactions.filter(i => i.type === 'comment').map(i => ({
+                    text: i.content,
+                    timestamp: i.createdAt
+                }));
+
+                return {
+                    id: Buffer.from(article.url).toString('base64'),
+                    keyword,
+                    title: article.title,
+                    summary,
+                    category,
+                    sentiment,
+                    url: article.url,
+                    source: article.source,
+                    likes,
+                    comments
+                };
+            });
+
+            const batchResults = await Promise.all(batchPromises);
+            RESULTS.push(...batchResults);
+        }
+
+        const feed = RESULTS.filter(item => item !== null);
 
         return NextResponse.json({
             feed,
