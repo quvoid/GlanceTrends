@@ -1,33 +1,10 @@
-.container {
-    display: grid;
-    grid-template-columns: 80px 1fr;
-    min-height: 100vh;
-    background-color: var(--background);
-    color: var(--foreground);
-    max-width: 1600px;
-    margin: 0 auto;
-}
-
-.navWrapper {
-    border-right: 1px solid var(--border);
-    padding: 10px;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-}
-
-.content {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+/* search.module.css — Search-specific styles */
+/* Grid layout is handled by Feed.module.css */
 
 .searchHeader {
     width: 100%;
-    max-width: 800px;
-    margin-bottom: 40px;
-    margin-top: 20px;
+    margin-bottom: 30px;
+    margin-top: 8px;
 }
 
 .searchForm {
@@ -37,51 +14,49 @@
 
 .searchInput {
     flex: 1;
-    padding: 15px 20px;
+    padding: 14px 20px;
     border-radius: 30px;
     border: 1px solid var(--border);
-    background-color: var(--card-bg);
+    background: rgba(255, 255, 255, 0.03);
     color: var(--foreground);
-    font-size: 1.1rem;
+    font-size: 1rem;
     outline: none;
-    transition: box-shadow 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .searchInput:focus {
-    box-shadow: 0 0 0 2px var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(29, 155, 240, 0.15);
 }
 
 .searchBtn {
-    background-color: var(--accent);
+    background: var(--accent);
     color: white;
     border: none;
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: transform 0.2s;
+    flex-shrink: 0;
 }
 
 .searchBtn:hover {
     transform: scale(1.05);
 }
 
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 20px;
+.results {
     width: 100%;
-    max-width: 1000px;
 }
 
 .message {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: var(--text-secondary);
     text-align: center;
-    margin-top: 50px;
+    margin-top: 40px;
 }
 
 .emptyState {
@@ -89,7 +64,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: 100px;
+    margin-top: 80px;
     color: var(--text-secondary);
     gap: 10px;
 }

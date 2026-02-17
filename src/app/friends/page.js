@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import Navigation from '@/components/Navigation';
+import Sidebar from '@/components/Sidebar';
+import feedStyles from '@/components/Feed.module.css';
 import styles from './friends.module.css';
 import { MessageSquare, UserPlus, Users, Search, Smile, Image as ImageIcon, Send, Paperclip, ExternalLink } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
@@ -17,57 +18,25 @@ export default function FriendsPage() {
     const [searchResults, setSearchResults] = useState([]);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-    // Resizer State
-    const [rightColumnWidth, setRightColumnWidth] = useState(320);
-    const [isResizing, setIsResizing] = useState(false);
-
     const messagesEndRef = useRef(null);
     const intervalRef = useRef(null);
-    const containerRef = useRef(null);
-
-    // Resizing Logic
-    const startResizing = useCallback((mouseDownEvent) => {
-        setIsResizing(true);
-    }, []);
-
-    const stopResizing = useCallback(() => {
-        setIsResizing(false);
-    }, []);
-
-    const resize = useCallback((mouseMoveEvent) => {
-        if (isResizing) {
-            const newWidth = window.innerWidth - mouseMoveEvent.clientX;
-            if (newWidth > 200 && newWidth < 600) { // Min/Max constraints
-                setRightColumnWidth(newWidth);
-            }
-        }
-    }, [isResizing]);
-
-    useEffect(() => {
-        window.addEventListener("mousemove", resize);
-        window.addEventListener("mouseup", stopResizing);
-        return () => {
-            window.removeEventListener("mousemove", resize);
-            window.removeEventListener("mouseup", stopResizing);
-        };
-    }, [resize, stopResizing]);
-
-    // Initial Load
-    useEffect(() => {
-        fetchFriends();
-    }, []);
 
     // Scroll to bottom
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, activeFriend]);
 
+    // Initial Load
+    useEffect(() => {
+        fetchFriends();
+    }, []);
+
     // Poll for messages when chat is open
     useEffect(() => {
         if (activeFriend) {
             fetchMessages(activeFriend.friendId);
             intervalRef.current = setInterval(() => {
-                fetchMessages(activeFriend.friendId, true); // true = silent update
+                fetchMessages(activeFriend.friendId, true);
             }, 3000);
         } else {
             if (intervalRef.current) clearInterval(intervalRef.current);
@@ -167,19 +136,14 @@ export default function FriendsPage() {
     );
 
     return (
-        <div
-            className={styles.container}
-            ref={containerRef}
-            style={{
-                gridTemplateColumns: `220px 1fr 10px ${rightColumnWidth}px`
-            }}
-        >
-            <div className={styles.navWrapper}>
-                <Navigation />
+        <div className={feedStyles.layout}>
+            {/* Left Column: Sidebar (consistent with Home) */}
+            <div className={feedStyles.sidebarCol}>
+                <Sidebar />
             </div>
 
-            {/* Center: Main Chat Area */}
-            <div className={styles.chatArea}>
+            {/* Middle Column: Chat Area */}
+            <div className={feedStyles.feedCol} style={{ padding: 0, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
                 {activeFriend ? (
                     <>
                         <div className={styles.chatHeader}>
@@ -244,83 +208,78 @@ export default function FriendsPage() {
                 )}
             </div>
 
-            {/* Resizer Handle */}
-            <div
-                className={styles.resizer}
-                onMouseDown={startResizing}
-                style={{ cursor: 'col-resize', width: '10px', background: 'transparent', zIndex: 100 }}
-            />
-
-            {/* Right Sidebar: Friends List */}
-            <div className={styles.friendsList}>
-                <div className={styles.header}>
-                    <span>Chats</span>
-                    <button className={styles.addBtn} onClick={() => setActiveFriend(null)} title="Add Friend">
-                        <UserPlus size={18} />
-                    </button>
-                </div>
-
-                <div className={styles.searchBox}>
-                    <div style={{ position: 'relative' }}>
-                        <input
-                            className={styles.searchInput}
-                            placeholder="Search..."
-                            value={searchQuery}
-                            onChange={(e) => searchUsers(e.target.value)}
-                        />
-                        <Search size={16} className={styles.searchIcon} style={{ position: 'absolute', right: '12px', top: '12px', color: '#666' }} />
+            {/* Right Column: Friends List */}
+            <div className={feedStyles.panelCol}>
+                <div className={styles.friendsList}>
+                    <div className={styles.header}>
+                        <span>Chats</span>
+                        <button className={styles.addBtn} onClick={() => setActiveFriend(null)} title="Add Friend">
+                            <UserPlus size={18} />
+                        </button>
                     </div>
-                </div>
 
-                <div className={styles.list}>
-                    {/* Search Results */}
-                    {searchResults.length > 0 && (
-                        <>
-                            <div className={styles.sectionTitle}>Found Users</div>
-                            {searchResults.map(user => (
-                                <div key={user._id} className={styles.listItem}>
-                                    <div className={styles.avatar}>{user.name[0]}</div>
-                                    <div className={styles.name}>{user.name}</div>
-                                    <button className={styles.addBtn} onClick={() => sendRequest(user._id)} style={{ marginLeft: 'auto', width: 'auto', padding: '0 10px', borderRadius: '12px', fontSize: '0.8rem' }}>Add</button>
-                                </div>
-                            ))}
-                        </>
-                    )}
-
-                    {/* Pending Requests */}
-                    {pendingReceived.length > 0 && (
-                        <>
-                            <div className={styles.sectionTitle}>Requests</div>
-                            {pendingReceived.map(p => (
-                                <div key={p.requestId} className={styles.listItem}>
-                                    <div className={styles.avatar}>{p.name[0]}</div>
-                                    <div className={styles.name}>{p.name}</div>
-                                    <button className={styles.addBtn} onClick={() => acceptRequest(p.requestId)} style={{ marginLeft: 'auto', width: 'auto', padding: '0 10px', borderRadius: '12px', fontSize: '0.8rem', background: '#4caf50' }}>Accept</button>
-                                </div>
-                            ))}
-                        </>
-                    )}
-
-                    {/* Friends */}
-                    <div className={styles.sectionTitle}>Direct Messages</div>
-                    {friends.map(f => (
-                        <div
-                            key={f.friendId}
-                            className={`${styles.listItem} ${activeFriend?.friendId === f.friendId ? styles.active : ''}`}
-                            onClick={() => setActiveFriend(f)}
-                        >
-                            <div className={styles.avatar}>{f.name[0]}</div>
-                            <div className={styles.name}>{f.name}</div>
+                    <div className={styles.searchBox}>
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                className={styles.searchInput}
+                                placeholder="Search..."
+                                value={searchQuery}
+                                onChange={(e) => searchUsers(e.target.value)}
+                            />
+                            <Search size={16} className={styles.searchIcon} style={{ position: 'absolute', right: '12px', top: '12px', color: '#666' }} />
                         </div>
-                    ))}
+                    </div>
 
-                    {friends.length === 0 && pendingReceived.length === 0 && searchResults.length === 0 && (
-                        <div style={{ padding: '40px 20px', color: '#666', textAlign: 'center', fontSize: '0.9rem' }}>
-                            <Users size={32} style={{ marginBottom: '10px', opacity: 0.5 }} />
-                            <br />
-                            Find friends to start chatting!
-                        </div>
-                    )}
+                    <div className={styles.list}>
+                        {/* Search Results */}
+                        {searchResults.length > 0 && (
+                            <>
+                                <div className={styles.sectionTitle}>Found Users</div>
+                                {searchResults.map(user => (
+                                    <div key={user._id} className={styles.listItem}>
+                                        <div className={styles.avatar}>{user.name[0]}</div>
+                                        <div className={styles.name}>{user.name}</div>
+                                        <button className={styles.addBtn} onClick={() => sendRequest(user._id)} style={{ marginLeft: 'auto', width: 'auto', padding: '0 10px', borderRadius: '12px', fontSize: '0.8rem' }}>Add</button>
+                                    </div>
+                                ))}
+                            </>
+                        )}
+
+                        {/* Pending Requests */}
+                        {pendingReceived.length > 0 && (
+                            <>
+                                <div className={styles.sectionTitle}>Requests</div>
+                                {pendingReceived.map(p => (
+                                    <div key={p.requestId} className={styles.listItem}>
+                                        <div className={styles.avatar}>{p.name[0]}</div>
+                                        <div className={styles.name}>{p.name}</div>
+                                        <button className={styles.addBtn} onClick={() => acceptRequest(p.requestId)} style={{ marginLeft: 'auto', width: 'auto', padding: '0 10px', borderRadius: '12px', fontSize: '0.8rem', background: '#4caf50' }}>Accept</button>
+                                    </div>
+                                ))}
+                            </>
+                        )}
+
+                        {/* Friends */}
+                        <div className={styles.sectionTitle}>Direct Messages</div>
+                        {friends.map(f => (
+                            <div
+                                key={f.friendId}
+                                className={`${styles.listItem} ${activeFriend?.friendId === f.friendId ? styles.active : ''}`}
+                                onClick={() => setActiveFriend(f)}
+                            >
+                                <div className={styles.avatar}>{f.name[0]}</div>
+                                <div className={styles.name}>{f.name}</div>
+                            </div>
+                        ))}
+
+                        {friends.length === 0 && pendingReceived.length === 0 && searchResults.length === 0 && (
+                            <div style={{ padding: '40px 20px', color: '#666', textAlign: 'center', fontSize: '0.9rem' }}>
+                                <Users size={32} style={{ marginBottom: '10px', opacity: 0.5 }} />
+                                <br />
+                                Find friends to start chatting!
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

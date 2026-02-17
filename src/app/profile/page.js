@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Navigation from '@/components/Navigation';
-import styles from '@/components/Feed.module.css';
+import Sidebar from '@/components/Sidebar';
+import feedStyles from '@/components/Feed.module.css';
 import { useUser } from '@/context/UserContext';
-import { Camera, Save, Lock, User as UserIcon } from 'lucide-react';
+import { Camera, Save, Lock, User as UserIcon, Mail, Calendar, Award, Heart, FileText, LogOut } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { useRouter } from 'next/navigation';
 
@@ -19,6 +19,7 @@ export default function ProfilePage() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [activeSection, setActiveSection] = useState('general'); // 'general' | 'security'
 
     useEffect(() => {
         if (!loading && !user) {
@@ -56,222 +57,365 @@ export default function ProfilePage() {
 
     if (loading) {
         return (
-            <div className={styles.layout}>
-                <div className={styles.navContainer}>
-                    <Navigation />
+            <div className={feedStyles.layout}>
+                <div className={feedStyles.sidebarCol}>
+                    <Sidebar />
                 </div>
-                <div className={styles.main} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <div className={feedStyles.feedCol} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                     <div style={{ color: 'var(--text-secondary)' }}>Loading profile...</div>
                 </div>
+                <div className={feedStyles.panelCol}></div>
             </div>
         );
     }
 
-    if (!user) return null; // Should redirect in useEffect
+    if (!user) return null;
+
+    const userInitial = user.name ? user.name[0].toUpperCase() : 'U';
 
     return (
-        <div className={styles.layout}>
-            <div className={styles.navContainer}>
-                <Navigation />
+        <div className={feedStyles.layout}>
+            {/* Left Column: Sidebar (consistent) */}
+            <div className={feedStyles.sidebarCol}>
+                <Sidebar />
             </div>
 
-            <div className={styles.main}>
-                <div className={styles.controls} style={{ marginBottom: '20px' }}>
-                    <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>My Profile</h1>
-                </div>
-
+            {/* Middle Column: Profile Content */}
+            <div className={feedStyles.feedCol}>
+                {/* Profile Header / Banner */}
                 <div style={{
-                    background: 'var(--card-bg)',
-                    border: '1px solid var(--border)',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
                     borderRadius: '16px',
-                    padding: '30px',
-                    backdropFilter: 'blur(10px)',
-                    maxWidth: '600px',
-                    margin: '0 auto'
+                    padding: '40px 30px 30px',
+                    marginBottom: '24px',
+                    position: 'relative'
                 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '30px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '20px' }}>
                         <div style={{
-                            width: '100px',
-                            height: '100px',
+                            width: '90px',
+                            height: '90px',
                             borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                            background: 'rgba(255,255,255,0.2)',
+                            backdropFilter: 'blur(10px)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: '2.5rem',
                             fontWeight: 'bold',
                             color: 'white',
-                            marginBottom: '10px',
-                            position: 'relative'
+                            border: '3px solid rgba(255,255,255,0.4)',
+                            position: 'relative',
+                            flexShrink: 0
                         }}>
-                            {user.name ? user.name[0].toUpperCase() : 'U'}
+                            {userInitial}
                             <button style={{
                                 position: 'absolute',
-                                bottom: '0',
-                                right: '0',
+                                bottom: '-2px',
+                                right: '-2px',
                                 background: 'white',
-                                color: 'black',
+                                color: '#333',
                                 border: 'none',
                                 borderRadius: '50%',
-                                width: '32px',
-                                height: '32px',
+                                width: '28px',
+                                height: '28px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 cursor: 'pointer',
-                                boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                             }}>
-                                <Camera size={16} />
+                                <Camera size={14} />
                             </button>
                         </div>
-                        <h2 style={{ fontSize: '1.4rem' }}>{user.name}</h2>
-                        <span style={{ color: 'var(--text-secondary)' }}>{user.handle}</span>
-                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '4px' }}>{user.email}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <h1 style={{ fontSize: '1.6rem', fontWeight: '700', color: 'white', marginBottom: '2px' }}>{user.name}</h1>
+                            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>{user.handle}</p>
+                            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', marginTop: '2px' }}>{user.email}</p>
+                        </div>
                     </div>
+                </div>
 
-                    <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Full Name</label>
-                            <div style={{ position: 'relative' }}>
-                                <UserIcon size={18} style={{ position: 'absolute', top: '12px', left: '12px', color: '#888' }} />
+                {/* Section Tabs */}
+                <div style={{ display: 'flex', gap: '0', borderBottom: '1px solid var(--border)', marginBottom: '24px' }}>
+                    {[
+                        { id: 'general', label: 'General', icon: UserIcon },
+                        { id: 'security', label: 'Security', icon: Lock }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveSection(tab.id)}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: activeSection === tab.id ? 'var(--foreground)' : 'var(--text-secondary)',
+                                fontWeight: activeSection === tab.id ? '600' : '400',
+                                padding: '12px 20px',
+                                cursor: 'pointer',
+                                fontSize: '0.95rem',
+                                borderBottom: activeSection === tab.id ? '2px solid var(--accent)' : '2px solid transparent',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            <tab.icon size={16} />
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleSave}>
+                    {activeSection === 'general' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Full Name</label>
                                 <input
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     style={{
                                         width: '100%',
-                                        padding: '10px 10px 10px 40px',
-                                        borderRadius: '8px',
+                                        padding: '12px 16px',
+                                        borderRadius: '10px',
                                         border: '1px solid var(--border)',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        color: 'white'
+                                        background: 'rgba(255,255,255,0.03)',
+                                        color: 'var(--foreground)',
+                                        fontSize: '0.95rem',
+                                        transition: 'border-color 0.2s',
+                                        outline: 'none'
                                     }}
                                 />
                             </div>
-                        </div>
 
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Display Handle</label>
-                            <input
-                                type="text"
-                                value={handle}
-                                onChange={(e) => setHandle(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    borderRadius: '8px',
-                                    border: '1px solid var(--border)',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    color: 'white'
-                                }}
-                            />
-                        </div>
-
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Bio</label>
-                            <textarea
-                                rows={3}
-                                value={bio}
-                                onChange={(e) => setBio(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    borderRadius: '8px',
-                                    border: '1px solid var(--border)',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    color: 'white',
-                                    resize: 'none'
-                                }}
-                            />
-                        </div>
-
-                        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '20px', marginTop: '10px' }}>
-                            <h3 style={{ fontSize: '1.1rem', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Lock size={18} /> Security
-                            </h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>New Password</label>
-                                    <input
-                                        type="password"
-                                        placeholder="Min 6 chars"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        style={{
-                                            width: '100%',
-                                            padding: '10px',
-                                            borderRadius: '8px',
-                                            border: '1px solid var(--border)',
-                                            background: 'rgba(255,255,255,0.05)',
-                                            color: 'white'
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Confirm Password</label>
-                                    <input
-                                        type="password"
-                                        placeholder="Repeat password"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        style={{
-                                            width: '100%',
-                                            padding: '10px',
-                                            borderRadius: '8px',
-                                            border: '1px solid var(--border)',
-                                            background: 'rgba(255,255,255,0.05)',
-                                            color: 'white'
-                                        }}
-                                    />
-                                </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Display Handle</label>
+                                <input
+                                    type="text"
+                                    value={handle}
+                                    onChange={(e) => setHandle(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        borderRadius: '10px',
+                                        border: '1px solid var(--border)',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        color: 'var(--foreground)',
+                                        fontSize: '0.95rem',
+                                        outline: 'none'
+                                    }}
+                                />
                             </div>
-                        </div>
 
-                        <button
-                            type="submit"
-                            disabled={isSaving}
-                            style={{
-                                marginTop: '10px',
-                                background: isSaving ? '#555' : 'var(--accent)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '12px',
-                                borderRadius: '8px',
-                                fontWeight: 'bold',
-                                cursor: isSaving ? 'not-allowed' : 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                transition: 'opacity 0.2s'
-                            }}
-                        >
-                            {isSaving ? 'Saving...' : <><Save size={18} /> Save Changes</>}
-                        </button>
-                    </form>
-                </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Bio</label>
+                                <textarea
+                                    rows={3}
+                                    value={bio}
+                                    onChange={(e) => setBio(e.target.value)}
+                                    placeholder="Tell us about yourself..."
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        borderRadius: '10px',
+                                        border: '1px solid var(--border)',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        color: 'var(--foreground)',
+                                        fontSize: '0.95rem',
+                                        resize: 'none',
+                                        outline: 'none',
+                                        lineHeight: '1.5'
+                                    }}
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isSaving}
+                                style={{
+                                    marginTop: '8px',
+                                    background: isSaving ? '#555' : 'var(--accent)',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '12px 24px',
+                                    borderRadius: '10px',
+                                    fontWeight: '600',
+                                    cursor: isSaving ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s',
+                                    fontSize: '0.95rem',
+                                    width: 'fit-content'
+                                }}
+                            >
+                                {isSaving ? 'Saving...' : <><Save size={16} /> Save Changes</>}
+                            </button>
+                        </div>
+                    )}
+
+                    {activeSection === 'security' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>New Password</label>
+                                <input
+                                    type="password"
+                                    placeholder="Min 6 characters"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        borderRadius: '10px',
+                                        border: '1px solid var(--border)',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        color: 'var(--foreground)',
+                                        fontSize: '0.95rem',
+                                        outline: 'none'
+                                    }}
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Confirm Password</label>
+                                <input
+                                    type="password"
+                                    placeholder="Repeat password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        borderRadius: '10px',
+                                        border: '1px solid var(--border)',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        color: 'var(--foreground)',
+                                        fontSize: '0.95rem',
+                                        outline: 'none'
+                                    }}
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isSaving}
+                                style={{
+                                    marginTop: '8px',
+                                    background: isSaving ? '#555' : 'var(--accent)',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '12px 24px',
+                                    borderRadius: '10px',
+                                    fontWeight: '600',
+                                    cursor: isSaving ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s',
+                                    fontSize: '0.95rem',
+                                    width: 'fit-content'
+                                }}
+                            >
+                                {isSaving ? 'Saving...' : <><Lock size={16} /> Update Password</>}
+                            </button>
+                        </div>
+                    )}
+                </form>
             </div>
 
-            <aside className={styles.sidebar}>
-                {/* Simplified sidebar for profile page */}
-                <div className={styles.trendingContainer}>
-                    <h3 style={{ padding: '0 10px' }}>Profile Stats</h3>
-                    <div style={{ padding: '10px', color: '#ccc' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                            <span>Reports Filed</span>
-                            <strong>0</strong>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                            <span>Total Likes</span>
-                            <strong>0</strong>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span>Joined</span>
-                            <strong>{new Date(user.createdAt || Date.now()).toLocaleDateString()}</strong>
+            {/* Right Column: Profile Stats */}
+            <div className={feedStyles.panelCol}>
+                <div style={{ padding: '24px 16px', position: 'sticky', top: 0 }}>
+                    <h3 style={{ marginBottom: '20px', fontSize: '1.1rem', fontWeight: '700' }}>Profile Stats</h3>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        {[
+                            { icon: FileText, label: 'Reports Filed', value: '0', color: '#667eea' },
+                            { icon: Heart, label: 'Total Likes', value: '0', color: '#ff6b6b' },
+                            { icon: Calendar, label: 'Joined', value: new Date(user.createdAt || Date.now()).toLocaleDateString(), color: '#4ecdc4' }
+                        ].map((stat, i) => (
+                            <div key={i} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '14px',
+                                padding: '14px 16px',
+                                borderRadius: '12px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid var(--border)',
+                                transition: 'background 0.2s'
+                            }}>
+                                <div style={{
+                                    width: '36px',
+                                    height: '36px',
+                                    borderRadius: '10px',
+                                    background: `${stat.color}20`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexShrink: 0
+                                }}>
+                                    <stat.icon size={18} style={{ color: stat.color }} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{stat.label}</div>
+                                    <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>{stat.value}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
+                        <h4 style={{ marginBottom: '12px', fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Quick Actions</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <button style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                padding: '10px 14px',
+                                borderRadius: '10px',
+                                background: 'none',
+                                border: '1px solid var(--border)',
+                                color: 'var(--text-secondary)',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                transition: 'all 0.2s',
+                                width: '100%',
+                                textAlign: 'left'
+                            }}>
+                                <Award size={16} />
+                                View Achievements
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    await fetch('/api/auth/logout', { method: 'POST' });
+                                    router.push('/login');
+                                }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '10px',
+                                    padding: '10px 14px',
+                                    borderRadius: '10px',
+                                    background: 'none',
+                                    border: '1px solid rgba(255,59,48,0.3)',
+                                    color: '#ff3b30',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    transition: 'all 0.2s',
+                                    width: '100%',
+                                    textAlign: 'left'
+                                }}
+                            >
+                                <LogOut size={16} />
+                                Log Out
+                            </button>
                         </div>
                     </div>
                 </div>
-            </aside>
+            </div>
         </div>
     );
 }
